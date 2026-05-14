@@ -28,9 +28,7 @@ export default function PlayPage() {
     if (!room) return;
     const res = await fetch(`/api/game-state?room=${room}`);
     const data = await res.json();
-    if (data.error) {
-      // Optionally handle error (game not found, etc.)
-    } else {
+    if (!data.error) {
       setGame(data);
       if (data.votes && playerId) {
         setVotedChoice(data.votes[playerId] || null);
@@ -65,8 +63,31 @@ export default function PlayPage() {
         <span className="text-gray-400">Playing as {playerName}</span>
       </div>
 
-      <div className="bg-gray-800 p-4 rounded">
-        <p className="text-lg">{game.scenarioText}</p>
+      {/* Scene media + text */}
+      <div className="bg-gray-800 rounded overflow-hidden">
+        {game.sceneImageUrl && (
+          <img
+            src={game.sceneImageUrl}
+            alt="Scene"
+            className="w-full max-h-96 object-cover"
+          />
+        )}
+        {game.sceneVideoUrl && (
+          <div className="w-full">
+            {game.sceneVideoUrl.includes('youtube.com/embed') ? (
+              <iframe
+                src={game.sceneVideoUrl}
+                className="w-full h-64 md:h-96"
+                allowFullScreen
+              />
+            ) : (
+              <video controls className="w-full max-h-96">
+                <source src={game.sceneVideoUrl} type="video/mp4" />
+              </video>
+            )}
+          </div>
+        )}
+        <p className="p-4 text-lg">{game.scenarioText}</p>
       </div>
 
       {game.state === 'lobby' && (
@@ -93,31 +114,6 @@ export default function PlayPage() {
                       ${canVote ? 'hover:bg-gray-700 cursor-pointer' : 'opacity-70 cursor-default'}
                     `}
                   >
-                    {/* Media inside the clickable button */}
-                    {choice.imageUrl && (
-                      <img
-                        src={choice.imageUrl}
-                        alt={choice.text}
-                        className="w-full h-32 object-cover rounded mb-2"
-                      />
-                    )}
-                    {choice.videoUrl && (
-                      <div className="mb-2">
-                        {choice.videoUrl.includes('youtube.com/embed') ? (
-                          <iframe
-                            src={choice.videoUrl}
-                            title="Choice video"
-                            className="w-full h-32 rounded"
-                            allowFullScreen
-                          />
-                        ) : (
-                          <video controls className="w-full h-32 rounded">
-                            <source src={choice.videoUrl} type="video/mp4" />
-                          </video>
-                        )}
-                      </div>
-                    )}
-
                     <div className="flex justify-between items-center">
                       <span>{choice.text}</span>
                       <div className="flex space-x-2">

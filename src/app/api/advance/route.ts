@@ -18,23 +18,34 @@ export async function POST(request: Request) {
 
   switch (action) {
     case 'start': {
-      // Move from lobby to first scenario
-      if (gameData.state !== 'lobby') return NextResponse.json({ error: 'Game already started' }, { status: 400 });
+      if (gameData.state !== 'lobby')
+        return NextResponse.json({ error: 'Game already started' }, { status: 400 });
+
       gameData.state = 'scenario';
+      // Set initial scene media
+      const initialScene = story[gameData.currentScenarioId];
+      if (initialScene) {
+        gameData.sceneImageUrl = initialScene.imageUrl;
+        gameData.sceneVideoUrl = initialScene.videoUrl;
+      }
       await kv.set(key, gameData);
       return NextResponse.json({ success: true });
     }
+
     case 'open-voting': {
-      if (gameData.state !== 'scenario') return NextResponse.json({ error: 'Cannot open voting now' }, { status: 400 });
+      if (gameData.state !== 'scenario')
+        return NextResponse.json({ error: 'Cannot open voting now' }, { status: 400 });
       gameData.state = 'voting';
-      gameData.votes = {};  // clear previous votes
+      gameData.votes = {};
       gameData.winnerChoiceId = null;
       await kv.set(key, gameData);
       return NextResponse.json({ success: true });
     }
+
     case 'close-voting': {
-      if (gameData.state !== 'voting') return NextResponse.json({ error: 'Voting not open' }, { status: 400 });
-      // Calculate winner
+      if (gameData.state !== 'voting')
+        return NextResponse.json({ error: 'Voting not open' }, { status: 400 });
+
       const tally: Record<string, number> = {};
       for (const choiceId of Object.values(gameData.votes)) {
         tally[choiceId] = (tally[choiceId] || 0) + 1;
@@ -49,11 +60,9 @@ export async function POST(request: Request) {
           winners.push(choiceId);
         }
       }
-      // If no votes, just pick the first choice as default?
       if (winners.length === 0) {
         winners = [gameData.choices[0].id];
       }
-      // Tie-breaker: random
       const winner = winners[Math.floor(Math.random() * winners.length)];
       gameData.winnerChoiceId = winner;
       gameData.state = 'result';
@@ -61,10 +70,15 @@ export async function POST(request: Request) {
       await kv.set(key, gameData);
       return NextResponse.json({ success: true, winnerChoiceId: winner });
     }
+
     case 'next-scene': {
-      if (gameData.state !== 'result') return NextResponse.json({ error: 'No result to advance from' }, { status: 400 });
+      if (gameData.state !== 'result')
+        return NextResponse.json({ error: 'No result to advance from' }, { status: 400 });
+
       const winnerChoice = gameData.choices.find(c => c.id === gameData.winnerChoiceId);
-      if (!winnerChoice) return NextResponse.json({ error: 'Invalid winner choice' }, { status: 500 });
+      if (!winnerChoice)
+        return NextResponse.json({ error: 'Invalid winner choice' }, { status: 500 });
+
       const nextSceneId = winnerChoice.nextSceneId;
       const nextScene = story[nextSceneId];
       if (!nextScene) return NextResponse.json({ error: 'Scene not found' }, { status: 500 });
@@ -72,6 +86,8 @@ export async function POST(request: Request) {
       gameData.currentScenarioId = nextSceneId;
       gameData.scenarioText = nextScene.text;
       gameData.choices = nextScene.choices;
+      gameData.sceneImageUrl = nextScene.imageUrl;
+      gameData.sceneVideoUrl = nextScene.videoUrl;
       gameData.state = nextScene.choices.length > 0 ? 'scenario' : 'finished';
       gameData.votes = {};
       gameData.winnerChoiceId = null;
@@ -79,6 +95,7 @@ export async function POST(request: Request) {
       await kv.set(key, gameData);
       return NextResponse.json({ success: true });
     }
+
     default:
       return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
   }

@@ -46,7 +46,6 @@ export default function HostPage() {
   if (!hostId) return <p>Loading...</p>;
   if (!game) return <p>Loading game state...</p>;
 
-  // Lobby view
   if (game.state === 'lobby') {
     return (
       <div className="space-y-6">
@@ -72,7 +71,6 @@ export default function HostPage() {
     );
   }
 
-  // Calculate vote tallies
   const getVoteCounts = () => {
     if (!game || (game.state !== 'voting' && game.state !== 'result')) return {};
     const tally: Record<string, number> = {};
@@ -87,11 +85,35 @@ export default function HostPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Host Dashboard – Room {room}</h1>
-      <div className="bg-gray-800 p-4 rounded">
-        <p className="text-sm text-gray-400 mb-1">Scenario</p>
-        <p className="text-xl">{game.scenarioText}</p>
+
+      {/* Scene media + text */}
+      <div className="bg-gray-800 rounded overflow-hidden">
+        {game.sceneImageUrl && (
+          <img
+            src={game.sceneImageUrl}
+            alt="Scene"
+            className="w-full max-h-96 object-cover"
+          />
+        )}
+        {game.sceneVideoUrl && (
+          <div className="w-full">
+            {game.sceneVideoUrl.includes('youtube.com/embed') ? (
+              <iframe
+                src={game.sceneVideoUrl}
+                className="w-full h-64 md:h-96"
+                allowFullScreen
+              />
+            ) : (
+              <video controls className="w-full max-h-96">
+                <source src={game.sceneVideoUrl} type="video/mp4" />
+              </video>
+            )}
+          </div>
+        )}
+        <p className="p-4 text-xl">{game.scenarioText}</p>
       </div>
 
+      {/* Choices */}
       <div>
         <p className="text-sm text-gray-400 mb-2">Choices:</p>
         <ul className="space-y-2">
@@ -105,32 +127,6 @@ export default function HostPage() {
                   isWinner ? 'border-green-500 bg-green-900/30' : 'border-gray-700'
                 }`}
               >
-                {/* Media display */}
-                {choice.imageUrl && (
-                  <img
-                    src={choice.imageUrl}
-                    alt={choice.text}
-                    className="w-full h-48 object-cover rounded mb-2"
-                  />
-                )}
-                {choice.videoUrl && (
-                  <div className="mb-2">
-                    {choice.videoUrl.includes('youtube.com/embed') ? (
-                      <iframe
-                        src={choice.videoUrl}
-                        title="Choice video"
-                        className="w-full h-48 rounded"
-                        allowFullScreen
-                      />
-                    ) : (
-                      <video controls className="w-full h-48 rounded">
-                        <source src={choice.videoUrl} type="video/mp4" />
-                        Your browser does not support the video tag.
-                      </video>
-                    )}
-                  </div>
-                )}
-
                 <div className="flex justify-between items-start">
                   <span className="flex-1">{choice.text}</span>
                   {game.state === 'voting' || game.state === 'result' ? (
@@ -146,6 +142,7 @@ export default function HostPage() {
         </ul>
       </div>
 
+      {/* Host controls */}
       {game.state === 'scenario' && (
         <button
           onClick={() => advance('open-voting')}

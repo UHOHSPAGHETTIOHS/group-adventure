@@ -14,7 +14,6 @@ function generateId(): string {
 export async function POST() {
   const hostId = generateId();
   const roomCode = generateRoomCode();
-
   const initialScene = story['start'];
 
   const gameData: GameData = {
@@ -27,9 +26,10 @@ export async function POST() {
     votes: {},
     winnerChoiceId: null,
     history: [],
+    sceneImageUrl: initialScene.imageUrl,
+    sceneVideoUrl: initialScene.videoUrl,
   };
 
   await kv.set(`room:${roomCode}`, gameData);
-
   return NextResponse.json({ roomCode, hostId });
 }

@@ -4,10 +4,20 @@ export interface Player {
 }
 
 export type GameState = 'lobby' | 'scenario' | 'voting' | 'result' | 'finished';
+
 export interface Choice {
   id: string;
   text: string;
-  nextSceneId: string;  // the scene to go to if this choice wins
+  nextSceneId: string;
+  imageUrl?: string;
+  videoUrl?: string;
+}
+
+export interface Scene {
+  text: string;
+  choices: Choice[];
+  imageUrl?: string;
+  videoUrl?: string;
 }
 
 export interface GameData {
@@ -17,15 +27,9 @@ export interface GameData {
   currentScenarioId: string;
   scenarioText: string;
   choices: Choice[];
-  votes: Record<string, string>;   // playerId -> choiceId
+  votes: Record<string, string>;
   winnerChoiceId: string | null;
   history: { scenarioId: string; winnerChoiceId: string }[];
-}
-
-export interface Choice {
-  id: string;
-  text: string;
-  nextSceneId: string;
-  imageUrl?: string;   // optional image
-  videoUrl?: string;   // optional video
+  sceneImageUrl?: string;
+  sceneVideoUrl?: string;
 }

@@ -2,22 +2,24 @@ import { Choice } from './types';
 
 export interface Scene {
   text: string;
-  choices: Choice[];   // <-- change this line to use Choice[]
+  choices: Choice[];
+  imageUrl?: string;
+  videoUrl?: string;
 }
-
-// keep the rest of the file exactly as is...
 
 export const story: Record<string, Scene> = {
   start: {
     text: "You and your friends wake up in an abandoned cabin in the woods. The front door is locked, and the windows are boarded. You hear scratching coming from the attic.",
+    imageUrl: "/images/cabin.jpg",   // example scene image
     choices: [
       { id: "attic", text: "Investigate the attic", nextSceneId: "attic" },
-      { id: "basement", text: "Search for a basement entrance", nextSceneId: "basement", imageUrl: "/images/basement.oip" },
+      { id: "basement", text: "Search for a basement entrance", nextSceneId: "basement" },
       { id: "stay", text: "Stay together and barricade the living room", nextSceneId: "barricade" },
     ],
   },
   attic: {
     text: "The attic stairs creak loudly. At the top, you find an old radio and a diary. The radio crackles: 'Don't trust the one who has the key.'",
+    imageUrl: "/images/attic.jpg",
     choices: [
       { id: "radio", text: "Try to use the radio to call for help", nextSceneId: "radio_help" },
       { id: "diary", text: "Read the diary carefully", nextSceneId: "diary_read" },
@@ -26,6 +28,7 @@ export const story: Record<string, Scene> = {
   },
   basement: {
     text: "The basement door is hidden behind a shelf. It's dark and smells of damp earth. You hear a faint drip of water and a low, rhythmic thumping.",
+    imageUrl: "/images/basement.jpg",
     choices: [
       { id: "explore_basement", text: "Descend with a flashlight", nextSceneId: "basement_creature" },
       { id: "turn_back", text: "This feels wrong – go back up", nextSceneId: "barricade" },

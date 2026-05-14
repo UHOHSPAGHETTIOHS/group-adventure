@@ -1,4 +1,3 @@
-// src/lib/kv.ts
 import { Redis } from '@upstash/redis';
 
 const kv = new Redis({
