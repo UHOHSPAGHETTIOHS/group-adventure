@@ -1,8 +1,9 @@
 // src/lib/kv.ts
 import { Redis } from '@upstash/redis';
 
-// Using `Redis.fromEnv()` automatically reads
-// UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN from your environment
-const kv = Redis.fromEnv();
+const kv = new Redis({
+  url: process.env.KV_REST_API_URL!,
+  token: process.env.KV_REST_API_TOKEN!,
+});
 
 export default kv;
