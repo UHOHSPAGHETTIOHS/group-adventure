@@ -10,7 +10,7 @@ export interface Scene {
 export const story: Record<string, Scene> = {
   start: {
     text: "You and your friends wake up in an abandoned cabin in the woods. The front door is locked, and the windows are boarded. You hear scratching coming from the attic.",
-    imageUrl: "/images/cabin.jpg",   // example scene image
+    imageUrl: "/images/cabin.webp",   // example scene image
     choices: [
       { id: "attic", text: "Investigate the attic", nextSceneId: "attic" },
       { id: "basement", text: "Search for a basement entrance", nextSceneId: "basement" },
