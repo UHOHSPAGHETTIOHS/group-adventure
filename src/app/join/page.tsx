@@ -1,11 +1,22 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 
 export default function JoinPage() {
-  const router = useRouter();
+  return (
+    <Suspense fallback={<div className="text-center mt-20">Loading...</div>}>
+      <JoinForm />
+    </Suspense>
+  );
+}
+
+function JoinForm() {
+  // This is where we can safely use useSearchParams and useRouter
+  const { useSearchParams, useRouter } = require('next/navigation');
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const { useState } = require('react');
+
   const [roomCode, setRoomCode] = useState(searchParams.get('room') || '');
   const [name, setName] = useState('');
   const [error, setError] = useState('');

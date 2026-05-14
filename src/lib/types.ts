@@ -3,8 +3,7 @@ export interface Player {
   name: string;
 }
 
-export type GameState = 'lobby' | 'scenario' | 'voting' | 'result';
-
+export type GameState = 'lobby' | 'scenario' | 'voting' | 'result' | 'finished';
 export interface Choice {
   id: string;
   text: string;
