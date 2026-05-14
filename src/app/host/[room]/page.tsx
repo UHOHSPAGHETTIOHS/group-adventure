@@ -105,10 +105,36 @@ export default function HostPage() {
                   isWinner ? 'border-green-500 bg-green-900/30' : 'border-gray-700'
                 }`}
               >
-                <div className="flex justify-between">
-                  <span>{choice.text}</span>
+                {/* Media display */}
+                {choice.imageUrl && (
+                  <img
+                    src={choice.imageUrl}
+                    alt={choice.text}
+                    className="w-full h-48 object-cover rounded mb-2"
+                  />
+                )}
+                {choice.videoUrl && (
+                  <div className="mb-2">
+                    {choice.videoUrl.includes('youtube.com/embed') ? (
+                      <iframe
+                        src={choice.videoUrl}
+                        title="Choice video"
+                        className="w-full h-48 rounded"
+                        allowFullScreen
+                      />
+                    ) : (
+                      <video controls className="w-full h-48 rounded">
+                        <source src={choice.videoUrl} type="video/mp4" />
+                        Your browser does not support the video tag.
+                      </video>
+                    )}
+                  </div>
+                )}
+
+                <div className="flex justify-between items-start">
+                  <span className="flex-1">{choice.text}</span>
                   {game.state === 'voting' || game.state === 'result' ? (
-                    <span className="text-sm font-mono">{count} votes</span>
+                    <span className="text-sm font-mono ml-2">{count} votes</span>
                   ) : null}
                 </div>
                 {isWinner && (

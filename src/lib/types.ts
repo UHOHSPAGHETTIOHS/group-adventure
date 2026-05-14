@@ -21,3 +21,11 @@ export interface GameData {
   winnerChoiceId: string | null;
   history: { scenarioId: string; winnerChoiceId: string }[];
 }
+
+export interface Choice {
+  id: string;
+  text: string;
+  nextSceneId: string;
+  imageUrl?: string;   // optional image
+  videoUrl?: string;   // optional video
+}

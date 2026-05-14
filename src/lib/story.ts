@@ -1,18 +1,18 @@
+import { Choice } from './types';
+
 export interface Scene {
   text: string;
-  choices: {
-    id: string;
-    text: string;
-    nextSceneId: string;
-  }[];
+  choices: Choice[];   // <-- change this line to use Choice[]
 }
+
+// keep the rest of the file exactly as is...
 
 export const story: Record<string, Scene> = {
   start: {
     text: "You and your friends wake up in an abandoned cabin in the woods. The front door is locked, and the windows are boarded. You hear scratching coming from the attic.",
     choices: [
       { id: "attic", text: "Investigate the attic", nextSceneId: "attic" },
-      { id: "basement", text: "Search for a basement entrance", nextSceneId: "basement" },
+      { id: "basement", text: "Search for a basement entrance", nextSceneId: "basement", imageUrl: "/images/basement.oip" },
       { id: "stay", text: "Stay together and barricade the living room", nextSceneId: "barricade" },
     ],
   },

@@ -29,10 +29,9 @@ export default function PlayPage() {
     const res = await fetch(`/api/game-state?room=${room}`);
     const data = await res.json();
     if (data.error) {
-      // Maybe game ended or not found
+      // Optionally handle error (game not found, etc.)
     } else {
       setGame(data);
-      // Set current vote of this player
       if (data.votes && playerId) {
         setVotedChoice(data.votes[playerId] || null);
       }
@@ -52,7 +51,7 @@ export default function PlayPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ roomCode: room, playerId, choiceId }),
     });
-    fetchGame(); // immediate update
+    fetchGame();
   };
 
   if (!playerId || !game) {
@@ -66,7 +65,6 @@ export default function PlayPage() {
         <span className="text-gray-400">Playing as {playerName}</span>
       </div>
 
-      {/* Scenario text always visible */}
       <div className="bg-gray-800 p-4 rounded">
         <p className="text-lg">{game.scenarioText}</p>
       </div>
@@ -79,7 +77,7 @@ export default function PlayPage() {
         <>
           <p className="text-sm text-gray-400">Choices:</p>
           <ul className="space-y-3">
-            {game.choices.map(choice => {
+            {game.choices.map((choice) => {
               const isVoted = votedChoice === choice.id;
               const isWinner = game.winnerChoiceId === choice.id;
               const canVote = game.state === 'voting';
@@ -95,10 +93,37 @@ export default function PlayPage() {
                       ${canVote ? 'hover:bg-gray-700 cursor-pointer' : 'opacity-70 cursor-default'}
                     `}
                   >
+                    {/* Media inside the clickable button */}
+                    {choice.imageUrl && (
+                      <img
+                        src={choice.imageUrl}
+                        alt={choice.text}
+                        className="w-full h-32 object-cover rounded mb-2"
+                      />
+                    )}
+                    {choice.videoUrl && (
+                      <div className="mb-2">
+                        {choice.videoUrl.includes('youtube.com/embed') ? (
+                          <iframe
+                            src={choice.videoUrl}
+                            title="Choice video"
+                            className="w-full h-32 rounded"
+                            allowFullScreen
+                          />
+                        ) : (
+                          <video controls className="w-full h-32 rounded">
+                            <source src={choice.videoUrl} type="video/mp4" />
+                          </video>
+                        )}
+                      </div>
+                    )}
+
                     <div className="flex justify-between items-center">
                       <span>{choice.text}</span>
-                      {isVoted && <span className="text-indigo-400 text-sm ml-2">✓ Your vote</span>}
-                      {isWinner && <span className="text-green-400 text-sm ml-2">🏆 Winner</span>}
+                      <div className="flex space-x-2">
+                        {isVoted && <span className="text-indigo-400 text-sm">✓ Your vote</span>}
+                        {isWinner && <span className="text-green-400 text-sm">🏆 Winner</span>}
+                      </div>
                     </div>
                   </button>
                 </li>
@@ -106,13 +131,17 @@ export default function PlayPage() {
             })}
           </ul>
           {game.state === 'voting' && (
-            <p className="text-sm text-gray-400 text-center">Vote now! You can change your vote.</p>
+            <p className="text-sm text-gray-400 text-center">
+              Vote now! You can change your vote.
+            </p>
           )}
         </>
       )}
 
       {game.state === 'finished' && (
-        <p className="text-2xl font-bold text-center text-green-400">🎉 The adventure has ended!</p>
+        <p className="text-2xl font-bold text-center text-green-400">
+          🎉 The adventure has ended!
+        </p>
       )}
     </div>
   );
