@@ -89,23 +89,31 @@ export default function HostPage() {
       </h1>
 
       {/* Scene media + text */}
-      <div className="bg-black border border-blood-800 rounded overflow-hidden shadow-[0_0_20px_rgba(139,0,0,0.15)]">
-        {game.sceneImageUrl && (
-          <img src={game.sceneImageUrl} alt="Scene" className="w-full max-h-96 object-cover" />
-        )}
-        {game.sceneVideoUrl && (
-          <div className="w-full">
-            {game.sceneVideoUrl.includes('youtube.com/embed') ? (
-              <iframe src={game.sceneVideoUrl} className="w-full h-64 md:h-96" allowFullScreen />
-            ) : (
-              <video controls className="w-full max-h-96">
-                <source src={game.sceneVideoUrl} type="video/mp4" />
-              </video>
-            )}
-          </div>
-        )}
-        <p className="p-4 text-xl font-body text-gray-200 leading-relaxed">{game.scenarioText}</p>
-      </div>
+     <div className="bg-black border border-blood-800 rounded overflow-hidden shadow-[0_0_20px_rgba(139,0,0,0.15)]">
+  {game.sceneImageUrl && (
+    <img
+      src={game.sceneImageUrl}
+      alt="Scene"
+      className="w-full max-h-[800px] object-cover"
+    />
+  )}
+  {game.sceneVideoUrl && (
+    <div className="w-full">
+      {game.sceneVideoUrl.includes('youtube.com/embed') ? (
+        <iframe
+          src={game.sceneVideoUrl}
+          className="w-full h-[450px] md:h-[700px]"
+          allowFullScreen
+        />
+      ) : (
+        <video controls className="w-full max-h-[800px]">
+          <source src={game.sceneVideoUrl} type="video/mp4" />
+        </video>
+      )}
+    </div>
+  )}
+  <p className="p-4 text-xl font-body text-gray-200 leading-relaxed">{game.scenarioText}</p>
+</div>
 
       {/* Choices */}
       <div>
