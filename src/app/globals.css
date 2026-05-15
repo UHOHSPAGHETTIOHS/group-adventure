@@ -1,3 +1,70 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ---- Base Bloody Horror ---- */
+html {
+  background-color: #000;
+}
+
+body {
+  font-family: 'Crimson Text', Georgia, serif;
+}
+
+/* Headings, buttons, links → Oswald */
+h1, h2, h3, h4, h5, h6,
+button,
+a,
+.font-heading {
+  font-family: 'Oswald', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Selection color (bloody) */
+::selection {
+  background: #8b0000;
+  color: #ffffff;
+}
+
+/* Hover glow */
+button:hover,
+a:hover {
+  text-shadow: 0 0 5px rgba(139, 0, 0, 0.7);
+}
+
+/* ---- Scrollbar (dark + red) ---- */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+::-webkit-scrollbar-thumb {
+  background: #3a0000;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #8b0000;
+}
+
+/* ---- Utility classes ---- */
+.card {
+  background-color: #0c0c0c;
+  border: 1px solid #2a0000;
+}
+
+/* Optional: blood drip on top of main container if you add class "blood-drip" */
+.blood-drip::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 4px;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 30px,
+    #8b0000 30px,
+    #8b0000 32px
+  );
+  opacity: 0.7;
+}

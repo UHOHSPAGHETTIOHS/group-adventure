@@ -53,33 +53,25 @@ export default function PlayPage() {
   };
 
   if (!playerId || !game) {
-    return <p className="text-center mt-20">Loading game...</p>;
+    return <p className="text-center mt-20 text-blood-400 font-heading">Awaiting darkness...</p>;
   }
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Room {room}</h1>
-        <span className="text-gray-400">Playing as {playerName}</span>
+        <h1 className="text-2xl font-heading font-bold text-blood-500">ROOM {room}</h1>
+        <span className="text-gray-500 font-heading text-sm">{playerName}</span>
       </div>
 
       {/* Scene media + text */}
-      <div className="bg-gray-800 rounded overflow-hidden">
+      <div className="bg-black border border-blood-800 rounded overflow-hidden shadow-[0_0_20px_rgba(139,0,0,0.15)]">
         {game.sceneImageUrl && (
-          <img
-            src={game.sceneImageUrl}
-            alt="Scene"
-            className="w-full max-h-96 object-cover"
-          />
+          <img src={game.sceneImageUrl} alt="Scene" className="w-full max-h-96 object-cover" />
         )}
         {game.sceneVideoUrl && (
           <div className="w-full">
             {game.sceneVideoUrl.includes('youtube.com/embed') ? (
-              <iframe
-                src={game.sceneVideoUrl}
-                className="w-full h-64 md:h-96"
-                allowFullScreen
-              />
+              <iframe src={game.sceneVideoUrl} className="w-full h-64 md:h-96" allowFullScreen />
             ) : (
               <video controls className="w-full max-h-96">
                 <source src={game.sceneVideoUrl} type="video/mp4" />
@@ -87,16 +79,16 @@ export default function PlayPage() {
             )}
           </div>
         )}
-        <p className="p-4 text-lg">{game.scenarioText}</p>
+        <p className="p-4 text-lg font-body text-gray-200 leading-relaxed">{game.scenarioText}</p>
       </div>
 
       {game.state === 'lobby' && (
-        <p className="text-center text-gray-300">Waiting for the host to start the game...</p>
+        <p className="text-center text-gray-500 font-heading">Waiting for the host to begin...</p>
       )}
 
       {(game.state === 'scenario' || game.state === 'voting' || game.state === 'result') && (
         <>
-          <p className="text-sm text-gray-400">Choices:</p>
+          <p className="text-sm font-heading text-gray-500 tracking-wider">CHOOSE YOUR FATE</p>
           <ul className="space-y-3">
             {game.choices.map((choice) => {
               const isVoted = votedChoice === choice.id;
@@ -108,17 +100,17 @@ export default function PlayPage() {
                   <button
                     onClick={() => canVote && castVote(choice.id)}
                     disabled={!canVote}
-                    className={`w-full text-left p-3 rounded border transition
-                      ${isWinner ? 'border-green-500 bg-green-900/30' : 'border-gray-700'}
-                      ${isVoted ? 'ring-2 ring-indigo-400' : ''}
-                      ${canVote ? 'hover:bg-gray-700 cursor-pointer' : 'opacity-70 cursor-default'}
+                    className={`w-full text-left p-3 rounded border font-heading tracking-wide transition-all duration-200
+                      ${isWinner ? 'border-blood-600 bg-blood-950/40 shadow-[0_0_10px_rgba(139,0,0,0.4)]' : 'border-blood-800 bg-black'}
+                      ${isVoted ? 'ring-2 ring-blood-500' : ''}
+                      ${canVote ? 'hover:bg-blood-950 hover:border-blood-500 cursor-pointer' : 'opacity-70 cursor-default'}
                     `}
                   >
                     <div className="flex justify-between items-center">
-                      <span>{choice.text}</span>
+                      <span className="text-gray-100 text-lg">{choice.text}</span>
                       <div className="flex space-x-2">
-                        {isVoted && <span className="text-indigo-400 text-sm">✓ Your vote</span>}
-                        {isWinner && <span className="text-green-400 text-sm">🏆 Winner</span>}
+                        {isVoted && <span className="text-blood-400 text-sm">✓ YOUR VOTE</span>}
+                        {isWinner && <span className="text-blood-400 text-sm">🏆 CHOSEN</span>}
                       </div>
                     </div>
                   </button>
@@ -127,17 +119,13 @@ export default function PlayPage() {
             })}
           </ul>
           {game.state === 'voting' && (
-            <p className="text-sm text-gray-400 text-center">
-              Vote now! You can change your vote.
-            </p>
+            <p className="text-center text-gray-500 text-sm font-heading">Vote now. Your fate is not yet sealed.</p>
           )}
         </>
       )}
 
       {game.state === 'finished' && (
-        <p className="text-2xl font-bold text-center text-green-400">
-          🎉 The adventure has ended!
-        </p>
+        <p className="text-3xl font-heading font-bold text-blood-500 text-center">THE END</p>
       )}
     </div>
   );

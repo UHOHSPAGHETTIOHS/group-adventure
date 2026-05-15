@@ -27,34 +27,38 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col items-center mt-20 space-y-6">
-      <h1 className="text-4xl font-bold text-center">Group Adventure</h1>
-      <p className="text-gray-400 text-center">A voting-based choose-your-own-adventure game</p>
+    <div className="flex flex-col items-center mt-20 space-y-8">
+      <h1 className="text-5xl font-heading font-bold text-blood-500 tracking-widest">
+        Group Adventure
+      </h1>
+      <p className="text-lg text-gray-400 font-body text-center max-w-md">
+        A dark, voting-based journey into the unknown.
+      </p>
       <button
         onClick={createGame}
-        className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 px-8 rounded-lg text-lg"
+        className="px-8 py-3 bg-blood-800 hover:bg-blood-700 text-white font-heading text-lg tracking-wider border border-blood-600 rounded transition-all duration-300 shadow-[0_0_15px_rgba(139,0,0,0.4)]"
       >
         Create New Game
       </button>
-      <div className="flex flex-col items-center space-y-3">
-        <p className="text-sm text-gray-300">Or join an existing game:</p>
+      <div className="flex flex-col items-center space-y-4">
+        <p className="text-sm text-gray-500 font-heading tracking-wide">OR JOIN EXISTING</p>
         <div className="flex space-x-2">
           <input
             value={roomCode}
             onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
-            placeholder="Room code"
-            className="bg-gray-800 border border-gray-700 rounded px-3 py-2 text-center uppercase text-white"
+            placeholder="ROOM CODE"
+            className="bg-black border border-blood-800 rounded px-4 py-2 text-center uppercase font-heading text-gray-200 placeholder-gray-600 focus:outline-none focus:border-blood-500 w-28"
             maxLength={6}
           />
           <button
             onClick={joinWithCode}
-            className="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded"
+            className="px-4 py-2 bg-black border border-blood-800 hover:border-blood-500 text-blood-400 font-heading text-sm tracking-wider rounded transition"
           >
             Join
           </button>
         </div>
-        <button onClick={goToJoin} className="text-indigo-400 underline text-sm">
-          Join with name selection
+        <button onClick={goToJoin} className="text-blood-500 hover:text-blood-300 text-sm font-heading underline">
+          Join with name
         </button>
       </div>
     </div>
