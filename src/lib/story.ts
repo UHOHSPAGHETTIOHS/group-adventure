@@ -29,5 +29,19 @@ export const story: Record<string, Scene> = {
       { id: 'go_upstairs', text: 'Head upstairs instead', nextSceneId: 'upstairs_hallway' },
     ],
   },
-  // add more scenes as you extend Act 1
+  upstairs_hallway: {
+    text: 'You are upstairs. It’s dark and quiet.',
+    choices: [
+      { id: 'check_kitchen', text: 'Go to the kitchen', nextSceneId: 'kitchen' },
+      { id: 'check_bedroom', text: 'Search the bedroom', nextSceneId: 'bedroom' },
+    ],
+  },
+  stay_basement: {
+    text: 'You decide to wait. Hours pass…',
+    choices: [],
+  },
+  outside_yard: {
+    text: 'You step into the cold night air.',
+    choices: [],
+  },
 };
