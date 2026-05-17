@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import kv from '@/lib/kv';
 import { GameData } from '@/lib/types';
-import { story } from '@/lib/story';
+import { story } from '@/lib/story';  // ← import story from story.ts (voting data)
+
 
 export async function POST(request: Request) {
   const { roomCode, hostId, action } = await request.json();
@@ -17,19 +18,17 @@ export async function POST(request: Request) {
   }
 
   switch (action) {
-  case 'start': {
-  if (gameData.state !== 'lobby') return NextResponse.json({ error: 'Game already started' }, { status: 400 });
-  gameData.state = 'scenario';
+    case 'start': {
+      if (gameData.state !== 'lobby')
+        return NextResponse.json({ error: 'Game already started' }, { status: 400 });
 
-  gameData.scenarioText = "What do you do?";
-  gameData.choices = [
-    { id: "listen_broadcast", text: "Listen to the emergency broadcast", nextSceneId: "tv_broadcast" },
-    { id: "touch_jacob", text: "Touch Jacob, then listen to the broadcast", nextSceneId: "tv_broadcast" },
-  ];
-
-  await kv.set(key, gameData);
-  return NextResponse.json({ success: true });
-}
+      gameData.state = 'scenario';
+      gameData.scenarioText = 'What do you do?';
+      gameData.choices = story.start.choices;
+      gameData.inventory = []; // initialise empty inventory
+      await kv.set(key, gameData);
+      return NextResponse.json({ success: true });
+    }
 
     case 'open-voting': {
       if (gameData.state !== 'scenario')
@@ -78,6 +77,15 @@ export async function POST(request: Request) {
       if (!winnerChoice)
         return NextResponse.json({ error: 'Invalid winner choice' }, { status: 500 });
 
+      // Handle items
+      if (winnerChoice.givesItem) {
+        gameData.inventory.push(winnerChoice.givesItem);
+      }
+      if (winnerChoice.removesItem) {
+        const index = gameData.inventory.indexOf(winnerChoice.removesItem);
+        if (index !== -1) gameData.inventory.splice(index, 1);
+      }
+
       const nextSceneId = winnerChoice.nextSceneId;
       const nextScene = story[nextSceneId];
       if (!nextScene) return NextResponse.json({ error: 'Scene not found' }, { status: 500 });
@@ -85,8 +93,10 @@ export async function POST(request: Request) {
       gameData.currentScenarioId = nextSceneId;
       gameData.scenarioText = nextScene.text;
       gameData.choices = nextScene.choices;
-      gameData.sceneImageUrl = nextScene.imageUrl;
-      gameData.sceneVideoUrl = nextScene.videoUrl;
+
+      // If you want animated scene integration, you can set media here from act1Scenes
+      // For now we leave sceneImageUrl/VideoUrl blank, as stage is purely animated.
+
       gameData.state = nextScene.choices.length > 0 ? 'scenario' : 'finished';
       gameData.votes = {};
       gameData.winnerChoiceId = null;

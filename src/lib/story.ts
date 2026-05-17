@@ -1,94 +1,33 @@
-import { Choice } from './types';
-
-export interface Scene {
-  text: string;
-  choices: Choice[];
-  imageUrl?: string;
-  videoUrl?: string;
-}
+import { Scene } from './types';
 
 export const story: Record<string, Scene> = {
   start: {
-  text: "",
-  choices: [], // will be overwritten by the API
-},
-tv_broadcast: {
-  text: "The group gathers around the TV, listening intently...",
-  choices: [],
-},
-  basement: {
-    text: "The basement door is hidden behind a shelf. It's dark and smells of damp earth. You hear a faint drip of water and a low, rhythmic thumping.",
-    imageUrl: "/images/basement.jpg",
+    text: '',
     choices: [
-      { id: "explore_basement", text: "Descend with a flashlight", nextSceneId: "basement_creature" },
-      { id: "turn_back", text: "This feels wrong – go back up", nextSceneId: "barricade" },
+      { id: 'listen_broadcast', text: 'Listen to the emergency broadcast', nextSceneId: 'tv_broadcast' },
+      { id: 'touch_jacob', text: 'Touch Jacob, then listen to the broadcast', nextSceneId: 'tv_broadcast' },
     ],
   },
-  barricade: {
-    text: "You push furniture against the doors. The scratching stops, then suddenly something slams against the front door. It won't hold long.",
+  tv_broadcast: {
+    text: 'What should we do?',
     choices: [
-      { id: "run_back", text: "Run to the kitchen and look for a back exit", nextSceneId: "kitchen" },
-      { id: "fight", text: "Arm yourselves with fireplace tools and make a stand", nextSceneId: "final_stand" },
-      { id: "hide", text: "Hide in the closets and hope it passes", nextSceneId: "hiding" },
+      { id: 'tie_up', text: 'Tie Mason up and secure the basement', nextSceneId: 'tie_mason', givesItem: 'rope' },
+      { id: 'flee', text: 'Flee the basement immediately', nextSceneId: 'flee_basement' },
     ],
   },
-  radio_help: {
-    text: "You fiddle with the radio and manage to send a distress call. A voice answers: 'Stay where you are, help is coming.' The scratching stops. After an agonising wait, you hear sirens. You're saved... but was the voice really rescue?",
-    choices: [],
-  },
-  diary_read: {
-    text: "The diary reveals the cabin owner was a cultist who trapped souls here. The only way out is to destroy the heart of the house – a beating crystal in the basement. You must go to the basement.",
+  tie_mason: {
+    text: 'Mason is tied. Now what?',
     choices: [
-      { id: "go_basement_now", text: "Head straight to the basement", nextSceneId: "basement_creature" },
+      { id: 'search_upstairs', text: 'Search the upstairs for supplies', nextSceneId: 'upstairs_hallway', givesItem: 'flashlight' },
+      { id: 'stay_basement', text: 'Stay in the basement and wait for rescue', nextSceneId: 'stay_basement' },
     ],
   },
-  basement_creature: {
-    text: "The thumping gets louder. In the corner, a pale, twisted creature clutches a glowing crystal. It screams. What do you do?",
+  flee_basement: {
+    text: "You're in the stairwell. The door to outside is ahead.",
     choices: [
-      { id: "grab_crystal", text: "Rush forward and grab the crystal", nextSceneId: "crystal_grabbed" },
-      { id: "run", text: "Run back up the stairs", nextSceneId: "barricade" },
-      { id: "talk", text: "Try to communicate with it", nextSceneId: "talk_creature" },
+      { id: 'go_outside', text: 'Open the door and go outside', nextSceneId: 'outside_yard' },
+      { id: 'go_upstairs', text: 'Head upstairs instead', nextSceneId: 'upstairs_hallway' },
     ],
   },
-  crystal_grabbed: {
-    text: "You seize the crystal. The creature shrieks and crumbles to dust. The house shakes. All the doors fly open. You escape into the dawn. Victory!",
-    choices: [],
-  },
-  talk_creature: {
-    text: "The creature tilts its head. It speaks in a broken whisper: 'Release me... break the crystal.' If you break it, the house will collapse. What will you do?",
-    choices: [
-      { id: "break_crystal", text: "Break the crystal", nextSceneId: "crystal_grabbed" },
-      { id: "keep_crystal", text: "Keep the crystal and try to leave", nextSceneId: "trap" },
-    ],
-  },
-  kitchen: {
-    text: "You find a back door, but it's chained from the outside. Through the window you see an old truck. Maybe the keys are somewhere?",
-    choices: [
-      { id: "search_keys", text: "Search the kitchen for keys", nextSceneId: "trap" },
-      { id: "break_window", text: "Break the window and run", nextSceneId: "outside" },
-    ],
-  },
-  outside: {
-    text: "You smash the window and scramble out. The house groans behind you. You run into the woods and eventually find a road. You're free!",
-    choices: [],
-  },
-  final_stand: {
-    text: "You grab pokers and a heavy log. The door bursts open – a massive shadowy figure stands there. You fight with everything you have...",
-    choices: [
-      { id: "charge", text: "Charge together", nextSceneId: "win_fight" },
-      { id: "dodge", text: "Dodge and flank it", nextSceneId: "win_fight" },
-    ],
-  },
-  win_fight: {
-    text: "After a brutal struggle, the creature collapses into a pool of black ichor. The sun rises and the cabin's curse is broken. You survived.",
-    choices: [],
-  },
-  hiding: {
-    text: "You squeeze into closets. The door splinters, heavy footsteps enter, then silence. Hours later you creep out – the creature is gone, but so is one of your friends...",
-    choices: [],
-  },
-  trap: {
-    text: "You become trapped in a dead end. The creature finds you. Game over.",
-    choices: [],
-  },
+  // add more scenes as you extend Act 1
 };

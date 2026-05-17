@@ -1,6 +1,7 @@
 export interface Player {
   id: string;
   name: string;
+  avatarId: string;
 }
 
 export type GameState = 'lobby' | 'scenario' | 'voting' | 'result' | 'finished';
@@ -11,6 +12,9 @@ export interface Choice {
   nextSceneId: string;
   imageUrl?: string;
   videoUrl?: string;
+  givesItem?: string;          // item added to inventory when this choice wins
+  requiresItem?: string;       // item required to select this choice (player vote only)
+  removesItem?: string;        // item removed from inventory after this choice wins
 }
 
 export interface Scene {
@@ -32,4 +36,5 @@ export interface GameData {
   history: { scenarioId: string; winnerChoiceId: string }[];
   sceneImageUrl?: string;
   sceneVideoUrl?: string;
+  inventory: string[];          // new: items the group currently holds
 }

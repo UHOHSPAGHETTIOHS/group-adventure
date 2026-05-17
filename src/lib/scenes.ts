@@ -1,15 +1,17 @@
 // Avatar positions on the stage (x,y percentages relative to the container)
+// Existing types...
 export interface AvatarPosition {
-  x: number; // percent from left
-  y: number; // percent from top
+  x: number;
+  y: number;
 }
 
-// A single step in the animation sequence
 export type SceneStep =
   | { type: "dialogue"; speaker: string; text: string }
-  | { type: "action"; target: string; effect: string } // e.g., "shake", "lunge"
+  | { type: "action"; target: string; effect: string }
   | { type: "tv_alert"; text: string }
-  | { type: "pause"; duration: number };
+  | { type: "pause"; duration: number }
+  | { type: "sound"; file: string }              // plays a sound from /public/sounds/
+  | { type: "remove_avatar"; target: string };   // hides the avatar (death/exit)
 
 export interface AnimatedScene {
   background: "basement"; // we'll use CSS room
