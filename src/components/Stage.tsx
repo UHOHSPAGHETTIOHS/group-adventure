@@ -74,12 +74,30 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stepIndex, sequence]);
 
+  // ---- Helper to position speech bubble safely ----
+  const getBubblePosition = (speaker: string) => {
+    const pos = positions[speaker];
+    let left = pos.x + 5;
+    let top = pos.y - 15;
+
+    // If too far right, flip to the left of the avatar
+    if (left > 85) left = pos.x - 30;
+    // Keep left within bounds
+    left = Math.max(5, Math.min(left, 85));
+
+    // If too high, push down
+    if (top < 5) top = pos.y + 5;
+    top = Math.max(5, Math.min(top, 80));
+
+    return { left, top };
+  };
+
   return (
     <div className="fixed inset-0 z-50 bg-gray-900 border-4 border-blood-800 overflow-hidden shadow-[0_0_30px_rgba(139,0,0,0.5)]">
       {/* Floor */}
       <div className="absolute inset-0 bg-gray-800" />
 
-      {/* ---------- CENTRE TABLE (wide & squat) ---------- */}
+      {/* ---------- CENTRE TABLE ---------- */}
       <div className="absolute left-[8%] right-[8%] top-[38%] h-16 bg-amber-800 border-2 border-amber-600 rounded-lg shadow-xl" />
 
       {/* Board game pieces */}
@@ -87,16 +105,15 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
       <div className="absolute left-[45%] top-[46%] w-8 h-8 bg-blue-500 rounded-full" />
       <div className="absolute left-[62%] top-[43%] w-8 h-8 bg-green-500 rounded-full" />
 
-      {/* ---------- COUCH (only one, bottom‑right, facing left) ---------- */}
+      {/* ---------- COUCH (bottom‑right, facing left) ---------- */}
       <div className="absolute right-[22%] bottom-[4%] w-[25%] h-14 bg-gray-600 rounded-lg border border-gray-500">
-        {/* Backrest on the right, so it faces left (toward the TV) */}
         <div className="absolute right-0 top-0 bottom-0 w-2 bg-gray-700 rounded-r" />
         <div className="absolute left-[10%] top-[12%] w-[25%] h-[75%] bg-gray-500 rounded" />
         <div className="absolute left-[40%] top-[12%] w-[25%] h-[75%] bg-gray-500 rounded" />
         <div className="absolute left-[70%] top-[12%] w-[25%] h-[75%] bg-gray-500 rounded" />
       </div>
 
-      {/* ---------- TV (bottom left, BIG) ---------- */}
+      {/* ---------- TV (bottom left) ---------- */}
       <div className="absolute left-[3%] bottom-[6%] w-72 h-44 bg-gray-700 rounded border-2 border-gray-500 flex items-center justify-center">
         <div
           className={`w-[92%] h-[82%] bg-black rounded flex items-center justify-center text-center font-heading overflow-hidden ${
@@ -110,7 +127,6 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
           )}
         </div>
       </div>
-      {/* TV antenna */}
       <div className="absolute left-[5%] bottom-[30%] w-1 h-12 bg-gray-500 transform -rotate-12 origin-bottom" />
 
       {/* ---------- AVATARS ---------- */}
@@ -145,13 +161,13 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
         );
       })}
 
-      {/* ---------- SPEECH BUBBLE ---------- */}
+      {/* ---------- SPEECH BUBBLE (smart positioning) ---------- */}
       {dialogue && (
         <div
           className="absolute z-20 bg-black border-2 border-blood-600 text-gray-100 p-6 rounded-xl text-2xl md:text-3xl font-body max-w-2xl shadow-2xl"
           style={{
-            left: `${positions[dialogue.speaker].x + 5}%`,
-            top: `${positions[dialogue.speaker].y - 15}%`,
+            left: `${getBubblePosition(dialogue.speaker).left}%`,
+            top: `${getBubblePosition(dialogue.speaker).top}%`,
           }}
         >
           <p className="font-heading text-blood-400 text-3xl md:text-4xl mb-4">
