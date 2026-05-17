@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { AnimatedScene } from '@/lib/scenes';
 
 function avatarUrl(name: string): string {
@@ -16,6 +16,7 @@ interface StageProps {
 export default function Stage({ scene, onComplete, overlay }: StageProps) {
   const [stepIndex, setStepIndex] = useState(0);
   const [dialogue, setDialogue] = useState<{ speaker: string; text: string } | null>(null);
+  const [displayedText, setDisplayedText] = useState('');  // currently visible characters
   const [tvText, setTvText] = useState<string | null>(null);
   const [tvStatic, setTvStatic] = useState(false);
   const [shaking, setShaking] = useState<string | null>(null);
@@ -28,6 +29,10 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
   const talkAudioRef = useRef<HTMLAudioElement | null>(null);
   const staticAudioRef = useRef<HTMLAudioElement | null>(null);
   const tvTalkAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Typewriter refs
+  const typingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const typingIndexRef = useRef(0);
 
   const sequence = scene.sequence;
   const positions = scene.positions;
@@ -48,12 +53,11 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
     tvTalkAudioRef.current = tvTalk;
 
     return () => {
-      // Cleanup on unmount
       stopAllAudio();
+      clearTyping();
     };
   }, []);
 
-  // Stop all audio instantly
   const stopAllAudio = () => {
     [talkAudioRef, staticAudioRef, tvTalkAudioRef].forEach(ref => {
       if (ref.current) {
@@ -63,8 +67,28 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
     });
   };
 
+  const clearTyping = () => {
+    if (typingIntervalRef.current) {
+      clearInterval(typingIntervalRef.current);
+      typingIntervalRef.current = null;
+    }
+  };
+
+  const startTyping = useCallback((fullText: string) => {
+    clearTyping();
+    setDisplayedText('');
+    typingIndexRef.current = 0;
+    typingIntervalRef.current = setInterval(() => {
+      typingIndexRef.current++;
+      setDisplayedText(fullText.substring(0, typingIndexRef.current));
+      if (typingIndexRef.current >= fullText.length) {
+        clearTyping();
+      }
+    }, 30); // speed: 30ms per character
+  }, []);
+
   const playTalk = () => {
-    stopAllAudio(); // stop any previous sound
+    stopAllAudio();
     if (talkAudioRef.current) {
       talkAudioRef.current.currentTime = 0;
       talkAudioRef.current.play().catch(() => {});
@@ -89,47 +113,58 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
 
   useEffect(() => {
     if (stepIndex >= sequence.length) {
-      stopAllAudio(); // cut all sound when sequence ends
+      stopAllAudio();
+      clearTyping();
       onCompleteRef.current?.();
       return;
     }
 
     const step = sequence[stepIndex];
-    // Reset visuals
+    // Reset visuals and audio
     setDialogue(null);
+    setDisplayedText('');
     setTvText(null);
     setTvStatic(false);
     setShaking(null);
     setTwitching(null);
+    clearTyping();
+    stopAllAudio();
 
     let timer: NodeJS.Timeout;
 
     switch (step.type) {
-      case 'dialogue':
-        setDialogue({ speaker: step.speaker, text: step.text });
+      case 'dialogue': {
+        const fullText = step.text;
+        setDialogue({ speaker: step.speaker, text: fullText });
         playTalk();
+        startTyping(fullText);
+        // Duration = typing time + 1 second pause
+        const duration = fullText.length * 30 + 1000;
         timer = setTimeout(() => {
-          stopAllAudio(); // cut the talk sound when dialogue ends
+          stopAllAudio();
+          clearTyping();
           setStepIndex(i => i + 1);
-        }, 4000);
+        }, duration);
         break;
+      }
 
-      case 'tv_alert':
-        // Phase 1: static
+      case 'tv_alert': {
+        // Static phase
         setTvStatic(true);
         playStatic();
         timer = setTimeout(() => {
           setTvStatic(false);
           setTvText(step.text);
-          stopAllAudio(); // stop static before playing tv talk
+          stopAllAudio();
           playTVTalk();
           const alertTimer = setTimeout(() => {
-            stopAllAudio(); // stop tv talk when alert finishes
+            stopAllAudio();
             setStepIndex(i => i + 1);
-          }, 4000);
+          }, 4000); // keep TV talk for 4 seconds
           return () => clearTimeout(alertTimer);
         }, 600);
         break;
+      }
 
       case 'action':
         if (step.effect === 'shake') setShaking(step.target);
@@ -151,24 +186,18 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
 
     return () => {
       clearTimeout(timer);
-      // Note: we don't stop audio here because the new step will handle it.
-      // However, if the component unmounts, the cleanup above will stop everything.
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stepIndex, sequence]);
+  }, [stepIndex, sequence, startTyping]);
 
-  // Smart bubble positioning
+  // Smart bubble positioning (unchanged)
   const getBubblePosition = (speaker: string) => {
     const pos = positions[speaker];
     let left = pos.x + 5;
     let top = pos.y - 15;
-
     if (left > 85) left = pos.x - 30;
     left = Math.max(5, Math.min(left, 85));
-
     if (top < 5) top = pos.y + 5;
     top = Math.max(5, Math.min(top, 80));
-
     return { left, top };
   };
 
@@ -241,7 +270,7 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
         );
       })}
 
-      {/* ---------- SPEECH BUBBLE ---------- */}
+      {/* ---------- SPEECH BUBBLE (with typewriter) ---------- */}
       {dialogue && (
         <div
           className="absolute z-20 bg-black border-2 border-blood-600 text-gray-100 p-6 rounded-xl text-2xl md:text-3xl font-body max-w-2xl shadow-2xl"
@@ -253,7 +282,11 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
           <p className="font-heading text-blood-400 text-3xl md:text-4xl mb-4">
             {dialogue.speaker}
           </p>
-          <p>{dialogue.text}</p>
+          <p>{displayedText}</p>
+          {/* Blinking cursor while typing */}
+          {typingIntervalRef.current && (
+            <span className="animate-pulse text-blood-400">|</span>
+          )}
         </div>
       )}
 
