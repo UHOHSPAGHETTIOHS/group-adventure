@@ -14,6 +14,9 @@ interface StageProps {
 }
 
 export default function Stage({ scene, onComplete, overlay }: StageProps) {
+  // ---- Mutable positions so avatars can move during the scene ----
+  const [currentPositions, setCurrentPositions] = useState<Record<string, { x: number; y: number }>>(scene.positions);
+
   const [stepIndex, setStepIndex] = useState(0);
   const [dialogue, setDialogue] = useState<{ speaker: string; text: string } | null>(null);
   const [displayedText, setDisplayedText] = useState('');
@@ -34,15 +37,16 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
   // Typewriter
   const typingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const typingIndexRef = useRef(0);
-
-  // Timer ref that persists across renders
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const sequence = scene.sequence;
-  const positions = scene.positions;
-  const names = Object.keys(positions);
 
-  // Preload audio (once)
+  // Reset positions when the scene changes
+  useEffect(() => {
+    setCurrentPositions(scene.positions);
+  }, [scene]);
+
+  // Preload audio
   useEffect(() => {
     const talk = new Audio('/sounds/talk.mp3'); talk.volume = 0.4; talkAudioRef.current = talk;
     const stat = new Audio('/sounds/static.mp3'); stat.volume = 0.5; staticAudioRef.current = stat;
@@ -81,13 +85,11 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
     }, 30);
   }, []);
 
-  // Advance step safely
   const goToNextStep = useCallback(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
     setStepIndex(i => i + 1);
   }, []);
 
-  // Main sequence engine
   useEffect(() => {
     if (stepIndex >= sequence.length) {
       stopAllAudio();
@@ -97,9 +99,9 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
     }
 
     const step = sequence[stepIndex];
-    console.log(`🎬 Step ${stepIndex}:`, step.type, step.type === 'dialogue' ? step.speaker : '');
+    console.log(`🎬 Step ${stepIndex}:`, step.type, 'speaker' in step ? step.speaker : '');
 
-    // Reset visual states
+    // Reset visuals
     setDialogue(null);
     setDisplayedText('');
     setTvText(null);
@@ -109,7 +111,6 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
     clearTyping();
     stopAllAudio();
 
-    // Clear any pending timer
     if (timerRef.current) clearTimeout(timerRef.current);
 
     switch (step.type) {
@@ -119,15 +120,13 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
         talkAudioRef.current?.play().catch(() => {});
         startTyping(fullText);
         const typingDuration = fullText.length * 30;
-        // stop audio after typing
         const stopAudioTimer = setTimeout(stopAllAudio, typingDuration);
-        // advance after 2s pause
         timerRef.current = setTimeout(() => {
           clearTimeout(stopAudioTimer);
           stopAllAudio();
           clearTyping();
           goToNextStep();
-        }, typingDuration + 2000);
+        }, typingDuration + 3000);   // ← 3‑second pause after typing finishes
         break;
       }
 
@@ -144,7 +143,7 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
             goToNextStep();
           }, 4000);
         }, 600);
-        timerRef.current = staticTimer; // in case component unmounts during static
+        timerRef.current = staticTimer;
         break;
       }
 
@@ -156,6 +155,16 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
           setTwitching(null);
           goToNextStep();
         }, 1500);
+        break;
+      }
+
+      case 'move_avatar': {
+        setCurrentPositions(prev => ({
+          ...prev,
+          [step.target]: { x: step.x, y: step.y },
+        }));
+        // Wait for CSS transition (300ms) + a small buffer
+        timerRef.current = setTimeout(goToNextStep, 600);
         break;
       }
 
@@ -174,8 +183,7 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
       }
 
       case 'remove_avatar': {
-        // For now, we just remove the avatar from the display by filtering
-        // We'll implement a removed set if needed, but skipping for simplicity
+        // For now we just skip – you can implement hiding later
         goToNextStep();
         break;
       }
@@ -185,17 +193,15 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
     }
 
     return () => {
-      // Cleanup if component unmounts or step changes before timer fires
       if (timerRef.current) clearTimeout(timerRef.current);
       clearTyping();
       stopAllAudio();
     };
   }, [stepIndex, sequence, goToNextStep, startTyping]);
 
-  // Bubble positioning
+  // Bubble positioning uses the current (possibly moved) positions
   const getBubblePosition = (speaker: string) => {
-    const pos = positions[speaker];
-    if (!pos) return { left: 50, top: 50 };
+    const pos = currentPositions[speaker] || { x: 50, y: 50 };
     let left = pos.x + 5;
     let top = pos.y - 15;
     if (left > 85) left = pos.x - 30;
@@ -242,9 +248,9 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
       </div>
       <div className="absolute left-[5%] bottom-[30%] w-1 h-12 bg-gray-500 transform -rotate-12 origin-bottom" />
 
-      {/* ---------- AVATARS ---------- */}
-      {names.map(name => {
-        const pos = positions[name];
+      {/* ---------- AVATARS (using currentPositions) ---------- */}
+      {Object.keys(currentPositions).map(name => {
+        const pos = currentPositions[name];
         if (!pos) return null;
         const isShaking = shaking === name;
         const isTwitching = twitching === name;

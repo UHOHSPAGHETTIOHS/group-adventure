@@ -4,15 +4,15 @@ export const story: Record<string, Scene> = {
   start: {
     text: '',
     choices: [
-      { id: 'listen_broadcast', text: 'Listen to the emergency broadcast', nextSceneId: 'tv_broadcast' },
-      { id: 'touch_jacob', text: 'Touch Jacob, then listen to the broadcast', nextSceneId: 'tv_broadcast' },
+      { id: 'listen_broadcast', text: 'Listen to the emergency broadcast closer', nextSceneId: 'tv_broadcast' },
+      { id: 'touch_jacob', text: 'Gang rape Jacob, then listen to the broadcast', nextSceneId: 'tv_broadcast' },
     ],
   },
   tv_broadcast: {
     text: 'What should we do?',
     choices: [
       { id: 'tie_up', text: 'Tie Mason up and secure the basement', nextSceneId: 'tie_mason', givesItem: 'rope' },
-      { id: 'flee', text: 'Flee the basement immediately', nextSceneId: 'flee_basement' },
+      { id: 'feed_sean', text: 'Sacrifice Sean to Mason', nextSceneId: 'flee_basement' },   // feeding Sean leads to fleeing after chaos
     ],
   },
   tie_mason: {
@@ -31,10 +31,7 @@ export const story: Record<string, Scene> = {
   },
   upstairs_hallway: {
     text: 'You are upstairs. It’s dark and quiet.',
-    choices: [
-      { id: 'check_kitchen', text: 'Go to the kitchen', nextSceneId: 'kitchen' },
-      { id: 'check_bedroom', text: 'Search the bedroom', nextSceneId: 'bedroom' },
-    ],
+    choices: [],  // will expand later
   },
   stay_basement: {
     text: 'You decide to wait. Hours pass…',
