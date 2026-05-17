@@ -24,7 +24,7 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
   const onCompleteRef = useRef(onComplete);
   onCompleteRef.current = onComplete;
 
-  // Audio references
+  // Audio refs
   const talkAudioRef = useRef<HTMLAudioElement | null>(null);
   const staticAudioRef = useRef<HTMLAudioElement | null>(null);
   const tvTalkAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -33,7 +33,7 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
   const positions = scene.positions;
   const names = Object.keys(positions);
 
-  // Preload all audio files (fail silently)
+  // Preload audio
   useEffect(() => {
     const talk = new Audio('/sounds/talk.mp3');
     talk.volume = 0.4;
@@ -46,9 +46,25 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
     const tvTalk = new Audio('/sounds/tvtalk.mp3');
     tvTalk.volume = 0.7;
     tvTalkAudioRef.current = tvTalk;
+
+    return () => {
+      // Cleanup on unmount
+      stopAllAudio();
+    };
   }, []);
 
+  // Stop all audio instantly
+  const stopAllAudio = () => {
+    [talkAudioRef, staticAudioRef, tvTalkAudioRef].forEach(ref => {
+      if (ref.current) {
+        ref.current.pause();
+        ref.current.currentTime = 0;
+      }
+    });
+  };
+
   const playTalk = () => {
+    stopAllAudio(); // stop any previous sound
     if (talkAudioRef.current) {
       talkAudioRef.current.currentTime = 0;
       talkAudioRef.current.play().catch(() => {});
@@ -56,6 +72,7 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
   };
 
   const playStatic = () => {
+    stopAllAudio();
     if (staticAudioRef.current) {
       staticAudioRef.current.currentTime = 0;
       staticAudioRef.current.play().catch(() => {});
@@ -63,6 +80,7 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
   };
 
   const playTVTalk = () => {
+    stopAllAudio();
     if (tvTalkAudioRef.current) {
       tvTalkAudioRef.current.currentTime = 0;
       tvTalkAudioRef.current.play().catch(() => {});
@@ -71,11 +89,13 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
 
   useEffect(() => {
     if (stepIndex >= sequence.length) {
+      stopAllAudio(); // cut all sound when sequence ends
       onCompleteRef.current?.();
       return;
     }
 
     const step = sequence[stepIndex];
+    // Reset visuals
     setDialogue(null);
     setTvText(null);
     setTvStatic(false);
@@ -88,19 +108,25 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
       case 'dialogue':
         setDialogue({ speaker: step.speaker, text: step.text });
         playTalk();
-        timer = setTimeout(() => setStepIndex(i => i + 1), 4000);
+        timer = setTimeout(() => {
+          stopAllAudio(); // cut the talk sound when dialogue ends
+          setStepIndex(i => i + 1);
+        }, 4000);
         break;
 
       case 'tv_alert':
-        // Phase 1: static flicker + static sound
+        // Phase 1: static
         setTvStatic(true);
         playStatic();
         timer = setTimeout(() => {
           setTvStatic(false);
           setTvText(step.text);
-          playTVTalk();                    // 🔈 TV voice starts
-          // Phase 2: show alert for 4 seconds (adjust as needed)
-          const alertTimer = setTimeout(() => setStepIndex(i => i + 1), 4000);
+          stopAllAudio(); // stop static before playing tv talk
+          playTVTalk();
+          const alertTimer = setTimeout(() => {
+            stopAllAudio(); // stop tv talk when alert finishes
+            setStepIndex(i => i + 1);
+          }, 4000);
           return () => clearTimeout(alertTimer);
         }, 600);
         break;
@@ -123,7 +149,11 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
         timer = setTimeout(() => setStepIndex(i => i + 1), 100);
     }
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      // Note: we don't stop audio here because the new step will handle it.
+      // However, if the component unmounts, the cleanup above will stop everything.
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stepIndex, sequence]);
 
