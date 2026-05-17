@@ -17,15 +17,57 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
   const [stepIndex, setStepIndex] = useState(0);
   const [dialogue, setDialogue] = useState<{ speaker: string; text: string } | null>(null);
   const [tvText, setTvText] = useState<string | null>(null);
+  const [tvStatic, setTvStatic] = useState(false);
   const [shaking, setShaking] = useState<string | null>(null);
   const [twitching, setTwitching] = useState<string | null>(null);
 
   const onCompleteRef = useRef(onComplete);
   onCompleteRef.current = onComplete;
 
+  // Audio references
+  const talkAudioRef = useRef<HTMLAudioElement | null>(null);
+  const staticAudioRef = useRef<HTMLAudioElement | null>(null);
+  const tvTalkAudioRef = useRef<HTMLAudioElement | null>(null);
+
   const sequence = scene.sequence;
   const positions = scene.positions;
   const names = Object.keys(positions);
+
+  // Preload all audio files (fail silently)
+  useEffect(() => {
+    const talk = new Audio('/sounds/talk.mp3');
+    talk.volume = 0.4;
+    talkAudioRef.current = talk;
+
+    const stat = new Audio('/sounds/static.mp3');
+    stat.volume = 0.5;
+    staticAudioRef.current = stat;
+
+    const tvTalk = new Audio('/sounds/tvtalk.mp3');
+    tvTalk.volume = 0.7;
+    tvTalkAudioRef.current = tvTalk;
+  }, []);
+
+  const playTalk = () => {
+    if (talkAudioRef.current) {
+      talkAudioRef.current.currentTime = 0;
+      talkAudioRef.current.play().catch(() => {});
+    }
+  };
+
+  const playStatic = () => {
+    if (staticAudioRef.current) {
+      staticAudioRef.current.currentTime = 0;
+      staticAudioRef.current.play().catch(() => {});
+    }
+  };
+
+  const playTVTalk = () => {
+    if (tvTalkAudioRef.current) {
+      tvTalkAudioRef.current.currentTime = 0;
+      tvTalkAudioRef.current.play().catch(() => {});
+    }
+  };
 
   useEffect(() => {
     if (stepIndex >= sequence.length) {
@@ -36,6 +78,7 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
     const step = sequence[stepIndex];
     setDialogue(null);
     setTvText(null);
+    setTvStatic(false);
     setShaking(null);
     setTwitching(null);
 
@@ -44,12 +87,22 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
     switch (step.type) {
       case 'dialogue':
         setDialogue({ speaker: step.speaker, text: step.text });
+        playTalk();
         timer = setTimeout(() => setStepIndex(i => i + 1), 4000);
         break;
 
       case 'tv_alert':
-        setTvText(step.text);
-        timer = setTimeout(() => setStepIndex(i => i + 1), 4000);
+        // Phase 1: static flicker + static sound
+        setTvStatic(true);
+        playStatic();
+        timer = setTimeout(() => {
+          setTvStatic(false);
+          setTvText(step.text);
+          playTVTalk();                    // 🔈 TV voice starts
+          // Phase 2: show alert for 4 seconds (adjust as needed)
+          const alertTimer = setTimeout(() => setStepIndex(i => i + 1), 4000);
+          return () => clearTimeout(alertTimer);
+        }, 600);
         break;
 
       case 'action':
@@ -74,18 +127,15 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stepIndex, sequence]);
 
-  // ---- Helper to position speech bubble safely ----
+  // Smart bubble positioning
   const getBubblePosition = (speaker: string) => {
     const pos = positions[speaker];
     let left = pos.x + 5;
     let top = pos.y - 15;
 
-    // If too far right, flip to the left of the avatar
     if (left > 85) left = pos.x - 30;
-    // Keep left within bounds
     left = Math.max(5, Math.min(left, 85));
 
-    // If too high, push down
     if (top < 5) top = pos.y + 5;
     top = Math.max(5, Math.min(top, 80));
 
@@ -99,13 +149,11 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
 
       {/* ---------- CENTRE TABLE ---------- */}
       <div className="absolute left-[8%] right-[8%] top-[38%] h-16 bg-amber-800 border-2 border-amber-600 rounded-lg shadow-xl" />
-
-      {/* Board game pieces */}
       <div className="absolute left-[28%] top-[44%] w-8 h-8 bg-red-500 rounded-full" />
       <div className="absolute left-[45%] top-[46%] w-8 h-8 bg-blue-500 rounded-full" />
       <div className="absolute left-[62%] top-[43%] w-8 h-8 bg-green-500 rounded-full" />
 
-      {/* ---------- COUCH (bottom‑right, facing left) ---------- */}
+      {/* ---------- COUCH ---------- */}
       <div className="absolute right-[22%] bottom-[4%] w-[25%] h-14 bg-gray-600 rounded-lg border border-gray-500">
         <div className="absolute right-0 top-0 bottom-0 w-2 bg-gray-700 rounded-r" />
         <div className="absolute left-[10%] top-[12%] w-[25%] h-[75%] bg-gray-500 rounded" />
@@ -113,14 +161,16 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
         <div className="absolute left-[70%] top-[12%] w-[25%] h-[75%] bg-gray-500 rounded" />
       </div>
 
-      {/* ---------- TV (bottom left) ---------- */}
+      {/* ---------- TV ---------- */}
       <div className="absolute left-[3%] bottom-[6%] w-72 h-44 bg-gray-700 rounded border-2 border-gray-500 flex items-center justify-center">
         <div
           className={`w-[92%] h-[82%] bg-black rounded flex items-center justify-center text-center font-heading overflow-hidden ${
-            tvText ? 'bg-red-900 animate-pulse' : ''
+            tvStatic ? 'bg-gray-500 animate-pulse' : tvText ? 'bg-red-900' : ''
           }`}
         >
-          {tvText ? (
+          {tvStatic ? (
+            <span className="text-gray-300 text-lg md:text-xl animate-ping">⚡ STATIC ⚡</span>
+          ) : tvText ? (
             <span className="text-red-300 text-sm md:text-lg leading-tight px-1">{tvText}</span>
           ) : (
             <span className="text-gray-500 text-2xl">OFF</span>
@@ -161,7 +211,7 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
         );
       })}
 
-      {/* ---------- SPEECH BUBBLE (smart positioning) ---------- */}
+      {/* ---------- SPEECH BUBBLE ---------- */}
       {dialogue && (
         <div
           className="absolute z-20 bg-black border-2 border-blood-600 text-gray-100 p-6 rounded-xl text-2xl md:text-3xl font-body max-w-2xl shadow-2xl"
