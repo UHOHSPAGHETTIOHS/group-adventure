@@ -1,13 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { AnimatedScene, SceneStep } from '@/lib/scenes';
+import { useEffect, useState, useRef } from 'react';
+import { AnimatedScene } from '@/lib/scenes';
 
-/**
- * Gets the avatar image URL. Assumes files are in /public/avatars/
- * and named exactly like the character (case-sensitive), with .jpg extension.
- * Adjust the extension if your files use .Jpg, .png, etc.
- */
 function avatarUrl(name: string): string {
   return `/avatars/${name}.jpg`;
 }
@@ -24,20 +19,23 @@ export default function Stage({ scene, onComplete }: StageProps) {
   const [shaking, setShaking] = useState<string | null>(null);
   const [twitching, setTwitching] = useState<string | null>(null);
 
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete; // always keep the latest callback
+
   const sequence = scene.sequence;
   const positions = scene.positions;
   const names = Object.keys(positions);
 
-  // Process the current step
   useEffect(() => {
-    // If we've finished the sequence, notify parent
     if (stepIndex >= sequence.length) {
-      onComplete?.();
+      // Sequence finished
+      onCompleteRef.current?.();
       return;
     }
 
     const step = sequence[stepIndex];
-    // Reset states before applying new step
+
+    // Reset all visual states
     setDialogue(null);
     setTvText(null);
     setShaking(null);
@@ -71,16 +69,17 @@ export default function Stage({ scene, onComplete }: StageProps) {
         break;
 
       default:
-        // Unknown step – skip
         timer = setTimeout(() => setStepIndex(i => i + 1), 100);
     }
 
     return () => clearTimeout(timer);
-  }, [stepIndex, sequence, onComplete]);
+    // onComplete is intentionally NOT in the dependency array – we use the ref instead
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stepIndex, sequence]);
 
   return (
-    <div className="relative w-full h-[600px] bg-gray-900 border-4 border-blood-800 overflow-hidden mx-auto rounded-lg shadow-[0_0_30px_rgba(139,0,0,0.5)]">
-      {/* ----- CSS-Drawn Basement ----- */}
+    <div className="fixed inset-0 z-50 bg-gray-900 border-4 border-blood-800 overflow-hidden shadow-[0_0_30px_rgba(139,0,0,0.5)]">
+      {/* CSS Basement */}
       {/* Floor */}
       <div className="absolute inset-0 bg-gray-800" />
       {/* Rug */}
@@ -88,14 +87,13 @@ export default function Stage({ scene, onComplete }: StageProps) {
 
       {/* Table */}
       <div className="absolute left-1/4 right-1/4 top-[35%] h-16 bg-amber-900 border-2 border-amber-700 rounded-lg shadow-lg" />
-      {/* Table legs */}
       <div className="absolute left-[28%] top-[calc(35%+64px)] w-4 h-20 bg-amber-900" />
       <div className="absolute right-[28%] top-[calc(35%+64px)] w-4 h-20 bg-amber-900" />
 
       {/* Couch */}
       <div className="absolute left-2 top-[60%] w-32 h-16 bg-gray-600 rounded-lg border border-gray-500" />
 
-      {/* TV stand & TV */}
+      {/* TV */}
       <div className="absolute right-2 top-[55%] w-20 h-10 bg-gray-700 rounded" />
       <div
         className={`absolute right-4 top-[35%] w-16 h-12 bg-black border-2 border-gray-600 rounded flex items-center justify-center text-center text-xs font-heading ${
@@ -109,11 +107,11 @@ export default function Stage({ scene, onComplete }: StageProps) {
         )}
       </div>
 
-      {/* Board game pieces (decorative) */}
+      {/* Board game pieces */}
       <div className="absolute left-[30%] top-[37%] w-4 h-4 bg-red-500 rounded-full" />
       <div className="absolute left-[45%] top-[39%] w-4 h-4 bg-blue-500 rounded-full" />
 
-      {/* ----- Avatars ----- */}
+      {/* Avatars */}
       {names.map(name => {
         const pos = positions[name];
         const isShaking = shaking === name;
@@ -136,23 +134,27 @@ export default function Stage({ scene, onComplete }: StageProps) {
             <img
               src={avatarUrl(name)}
               alt={name}
-              className="w-12 h-12 rounded-full object-cover border-2 border-gray-400 shadow-md"
+              className="w-12 h-12 md:w-16 md:h-16 rounded-full object-cover border-2 border-gray-400 shadow-md"
             />
-            <p className="text-[10px] text-gray-200 font-heading text-center mt-1">{name}</p>
+            <p className="text-[10px] md:text-xs text-gray-200 font-heading text-center mt-1">
+              {name}
+            </p>
           </div>
         );
       })}
 
-      {/* ----- Speech Bubble ----- */}
+      {/* Speech Bubble */}
       {dialogue && (
         <div
-          className="absolute z-20 bg-black border border-blood-600 text-gray-100 p-2 rounded-md text-xs font-body max-w-[200px] shadow-lg"
+          className="absolute z-20 bg-black border border-blood-600 text-gray-100 p-2 md:p-3 rounded-md text-xs md:text-sm font-body max-w-[200px] md:max-w-xs shadow-lg"
           style={{
             left: `${positions[dialogue.speaker].x + 5}%`,
-            top: `${positions[dialogue.speaker].y - 15}%`,
+            top: `${positions[dialogue.speaker].y - 12}%`,
           }}
         >
-          <p className="font-heading text-blood-400 text-[10px] mb-1">{dialogue.speaker}</p>
+          <p className="font-heading text-blood-400 text-[10px] md:text-xs mb-1">
+            {dialogue.speaker}
+          </p>
           <p>{dialogue.text}</p>
         </div>
       )}

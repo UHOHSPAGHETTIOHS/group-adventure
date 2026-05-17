@@ -79,23 +79,23 @@ export default function HostPage() {
   }
 
   // Stage for intro scene
-  if (game.state === 'scenario' && game.currentScenarioId === 'start') {
-    return (
-      <div className="space-y-4">
-        <Stage scene={basementIntro} onComplete={() => setStageFinished(true)} />
-        {stageFinished && (
-          <div className="flex justify-center">
-            <button
-              onClick={() => advance('open-voting')}
-              className="bg-blood-800 hover:bg-blood-700 text-white font-heading text-lg tracking-widest py-2 px-8 rounded border border-blood-600 shadow-lg"
-            >
-              OPEN VOTING
-            </button>
-          </div>
-        )}
-      </div>
-    );
-  }
+ if (game.state === 'scenario' && game.currentScenarioId === 'start') {
+  return (
+    <div className="relative w-screen h-screen">
+      <Stage scene={basementIntro} onComplete={() => setStageFinished(true)} />
+      {stageFinished && (
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-50">
+          <button
+            onClick={() => advance('open-voting')}
+            className="bg-blood-800 hover:bg-blood-700 text-white font-heading text-lg tracking-widest py-2 px-8 rounded border border-blood-600 shadow-lg"
+          >
+            OPEN VOTING
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
   // Fallback: Original text/media view for other scenes
   const getVoteCounts = () => {
