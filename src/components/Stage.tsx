@@ -133,20 +133,33 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
     let timer: NodeJS.Timeout;
 
     switch (step.type) {
-      case 'dialogue': {
-        const fullText = step.text;
-        setDialogue({ speaker: step.speaker, text: fullText });
-        playTalk();
-        startTyping(fullText);
-        // Duration = typing time + 1 second pause
-        const duration = fullText.length * 30 + 1000;
-        timer = setTimeout(() => {
-          stopAllAudio();
-          clearTyping();
-          setStepIndex(i => i + 1);
-        }, duration);
-        break;
-      }
+     case 'dialogue': {
+  const fullText = step.text;
+  setDialogue({ speaker: step.speaker, text: fullText });
+  playTalk();
+  startTyping(fullText);
+
+  const typingDuration = fullText.length * 30;  // time until last character appears
+
+  // Stop audio exactly when typing finishes
+  const stopAudioTimer = setTimeout(() => {
+    stopAllAudio();
+  }, typingDuration);
+
+  // Advance after a 1-second pause
+  const advanceTimer = setTimeout(() => {
+    clearTyping();
+    setStepIndex(i => i + 1);
+  }, typingDuration + 1000);
+
+  // Cleanup if the step changes or component unmounts
+  return () => {
+    clearTimeout(stopAudioTimer);
+    clearTimeout(advanceTimer);
+    clearTyping();
+    stopAllAudio();
+  };
+}
 
       case 'tv_alert': {
         // Static phase
