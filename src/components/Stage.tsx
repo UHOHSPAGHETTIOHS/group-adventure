@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { AnimatedScene, SceneStep } from '@/lib/scenes';
+import { AnimatedScene } from '@/lib/scenes';
 
 function avatarUrl(name: string): string {
   return `/avatars/${name}.jpg`;
@@ -11,10 +11,9 @@ interface StageProps {
   scene: AnimatedScene;
   onComplete?: () => void;
   overlay?: string;
-  inventory?: string[]; // optionally show items on avatars
 }
 
-export default function Stage({ scene, onComplete, overlay, inventory = [] }: StageProps) {
+export default function Stage({ scene, onComplete, overlay }: StageProps) {
   const [stepIndex, setStepIndex] = useState(0);
   const [dialogue, setDialogue] = useState<{ speaker: string; text: string } | null>(null);
   const [displayedText, setDisplayedText] = useState('');
@@ -22,7 +21,6 @@ export default function Stage({ scene, onComplete, overlay, inventory = [] }: St
   const [tvStatic, setTvStatic] = useState(false);
   const [shaking, setShaking] = useState<string | null>(null);
   const [twitching, setTwitching] = useState<string | null>(null);
-  const [removedAvatars, setRemovedAvatars] = useState<Set<string>>(new Set());
 
   const onCompleteRef = useRef(onComplete);
   onCompleteRef.current = onComplete;
@@ -33,20 +31,28 @@ export default function Stage({ scene, onComplete, overlay, inventory = [] }: St
   const tvTalkAudioRef = useRef<HTMLAudioElement | null>(null);
   const soundEffectRef = useRef<HTMLAudioElement | null>(null);
 
+  // Typewriter
   const typingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const typingIndexRef = useRef(0);
 
+  // Timer ref that persists across renders
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
   const sequence = scene.sequence;
   const positions = scene.positions;
-  const names = Object.keys(positions).filter(name => !removedAvatars.has(name));
+  const names = Object.keys(positions);
 
-  // Preload audio
+  // Preload audio (once)
   useEffect(() => {
     const talk = new Audio('/sounds/talk.mp3'); talk.volume = 0.4; talkAudioRef.current = talk;
     const stat = new Audio('/sounds/static.mp3'); stat.volume = 0.5; staticAudioRef.current = stat;
     const tvTalk = new Audio('/sounds/tvtalk.mp3'); tvTalk.volume = 0.7; tvTalkAudioRef.current = tvTalk;
-    soundEffectRef.current = new Audio(); // placeholder
-    return () => { stopAllAudio(); clearTyping(); };
+    soundEffectRef.current = new Audio();
+    return () => {
+      stopAllAudio();
+      clearTyping();
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
   }, []);
 
   const stopAllAudio = () => {
@@ -56,7 +62,10 @@ export default function Stage({ scene, onComplete, overlay, inventory = [] }: St
   };
 
   const clearTyping = () => {
-    if (typingIntervalRef.current) { clearInterval(typingIntervalRef.current); typingIntervalRef.current = null; }
+    if (typingIntervalRef.current) {
+      clearInterval(typingIntervalRef.current);
+      typingIntervalRef.current = null;
+    }
   };
 
   const startTyping = useCallback((fullText: string) => {
@@ -66,67 +75,127 @@ export default function Stage({ scene, onComplete, overlay, inventory = [] }: St
     typingIntervalRef.current = setInterval(() => {
       typingIndexRef.current++;
       setDisplayedText(fullText.substring(0, typingIndexRef.current));
-      if (typingIndexRef.current >= fullText.length) clearTyping();
+      if (typingIndexRef.current >= fullText.length) {
+        clearTyping();
+      }
     }, 30);
   }, []);
 
-  const playTalk = () => { stopAllAudio(); talkAudioRef.current?.play().catch(() => {}); };
-  const playStatic = () => { stopAllAudio(); staticAudioRef.current?.play().catch(() => {}); };
-  const playTVTalk = () => { stopAllAudio(); tvTalkAudioRef.current?.play().catch(() => {}); };
-  const playSound = (file: string) => {
-    stopAllAudio();
-    if (soundEffectRef.current) {
-      soundEffectRef.current.src = `/sounds/${file}`;
-      soundEffectRef.current.play().catch(() => {});
-    }
-  };
+  // Advance step safely
+  const goToNextStep = useCallback(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setStepIndex(i => i + 1);
+  }, []);
 
+  // Main sequence engine
   useEffect(() => {
     if (stepIndex >= sequence.length) {
-      stopAllAudio(); clearTyping(); onCompleteRef.current?.(); return;
+      stopAllAudio();
+      clearTyping();
+      onCompleteRef.current?.();
+      return;
     }
 
     const step = sequence[stepIndex];
-    // Reset
-    setDialogue(null); setDisplayedText(''); setTvText(null); setTvStatic(false);
-    setShaking(null); setTwitching(null); clearTyping(); stopAllAudio();
+    console.log(`🎬 Step ${stepIndex}:`, step.type, step.type === 'dialogue' ? step.speaker : '');
 
-    let timer: NodeJS.Timeout;
-    let cleanup = () => {};
+    // Reset visual states
+    setDialogue(null);
+    setDisplayedText('');
+    setTvText(null);
+    setTvStatic(false);
+    setShaking(null);
+    setTwitching(null);
+    clearTyping();
+    stopAllAudio();
+
+    // Clear any pending timer
+    if (timerRef.current) clearTimeout(timerRef.current);
 
     switch (step.type) {
-      case 'dialogue':
+      case 'dialogue': {
         const fullText = step.text;
         setDialogue({ speaker: step.speaker, text: fullText });
-        playTalk();
+        talkAudioRef.current?.play().catch(() => {});
         startTyping(fullText);
         const typingDuration = fullText.length * 30;
+        // stop audio after typing
         const stopAudioTimer = setTimeout(stopAllAudio, typingDuration);
-        const advanceTimer = setTimeout(() => { clearTyping(); setStepIndex(i => i + 1); }, typingDuration + 2000);
-        cleanup = () => { clearTimeout(stopAudioTimer); clearTimeout(advanceTimer); clearTyping(); stopAllAudio(); };
+        // advance after 2s pause
+        timerRef.current = setTimeout(() => {
+          clearTimeout(stopAudioTimer);
+          stopAllAudio();
+          clearTyping();
+          goToNextStep();
+        }, typingDuration + 2000);
         break;
+      }
 
-      case 'sound':
-        playSound(step.file);
-        timer = setTimeout(() => setStepIndex(i => i + 1), 1000); // short pause for sound
-        cleanup = () => clearTimeout(timer);
+      case 'tv_alert': {
+        setTvStatic(true);
+        staticAudioRef.current?.play().catch(() => {});
+        const staticTimer = setTimeout(() => {
+          setTvStatic(false);
+          setTvText(step.text);
+          stopAllAudio();
+          tvTalkAudioRef.current?.play().catch(() => {});
+          timerRef.current = setTimeout(() => {
+            stopAllAudio();
+            goToNextStep();
+          }, 4000);
+        }, 600);
+        timerRef.current = staticTimer; // in case component unmounts during static
         break;
+      }
 
-      case 'remove_avatar':
-        setRemovedAvatars(prev => new Set(prev).add(step.target));
-        timer = setTimeout(() => setStepIndex(i => i + 1), 500);
-        cleanup = () => clearTimeout(timer);
+      case 'action': {
+        if (step.effect === 'shake') setShaking(step.target);
+        else if (step.effect === 'twitch') setTwitching(step.target);
+        timerRef.current = setTimeout(() => {
+          setShaking(null);
+          setTwitching(null);
+          goToNextStep();
+        }, 1500);
         break;
+      }
 
-      // ... other cases unchanged (tv_alert, action, pause)
+      case 'pause': {
+        timerRef.current = setTimeout(goToNextStep, step.duration);
+        break;
+      }
+
+      case 'sound': {
+        if (soundEffectRef.current) {
+          soundEffectRef.current.src = `/sounds/${step.file}`;
+          soundEffectRef.current.play().catch(() => {});
+        }
+        timerRef.current = setTimeout(goToNextStep, 1500);
+        break;
+      }
+
+      case 'remove_avatar': {
+        // For now, we just remove the avatar from the display by filtering
+        // We'll implement a removed set if needed, but skipping for simplicity
+        goToNextStep();
+        break;
+      }
+
+      default:
+        goToNextStep();
     }
 
-    return cleanup;
-  }, [stepIndex, sequence, startTyping]);
+    return () => {
+      // Cleanup if component unmounts or step changes before timer fires
+      if (timerRef.current) clearTimeout(timerRef.current);
+      clearTyping();
+      stopAllAudio();
+    };
+  }, [stepIndex, sequence, goToNextStep, startTyping]);
 
-  // Smart bubble positioning (unchanged)
+  // Bubble positioning
   const getBubblePosition = (speaker: string) => {
     const pos = positions[speaker];
+    if (!pos) return { left: 50, top: 50 };
     let left = pos.x + 5;
     let top = pos.y - 15;
     if (left > 85) left = pos.x - 30;
@@ -176,6 +245,7 @@ export default function Stage({ scene, onComplete, overlay, inventory = [] }: St
       {/* ---------- AVATARS ---------- */}
       {names.map(name => {
         const pos = positions[name];
+        if (!pos) return null;
         const isShaking = shaking === name;
         const isTwitching = twitching === name;
 
@@ -198,14 +268,12 @@ export default function Stage({ scene, onComplete, overlay, inventory = [] }: St
               alt={name}
               className="w-20 h-20 md:w-28 md:h-28 rounded-full object-cover border-2 border-gray-400 shadow-md"
             />
-            <p className="text-sm md:text-base text-gray-200 font-heading text-center mt-1">
-              {name}
-            </p>
+            <p className="text-sm md:text-base text-gray-200 font-heading text-center mt-1">{name}</p>
           </div>
         );
       })}
 
-      {/* ---------- SPEECH BUBBLE (with typewriter) ---------- */}
+      {/* ---------- SPEECH BUBBLE ---------- */}
       {dialogue && (
         <div
           className="absolute z-20 bg-black border-2 border-blood-600 text-gray-100 p-6 rounded-xl text-2xl md:text-3xl font-body max-w-2xl shadow-2xl"
@@ -214,11 +282,8 @@ export default function Stage({ scene, onComplete, overlay, inventory = [] }: St
             top: `${getBubblePosition(dialogue.speaker).top}%`,
           }}
         >
-          <p className="font-heading text-blood-400 text-3xl md:text-4xl mb-4">
-            {dialogue.speaker}
-          </p>
+          <p className="font-heading text-blood-400 text-3xl md:text-4xl mb-4">{dialogue.speaker}</p>
           <p>{displayedText}</p>
-          {/* Blinking cursor while typing */}
           {typingIntervalRef.current && (
             <span className="animate-pulse text-blood-400">|</span>
           )}
