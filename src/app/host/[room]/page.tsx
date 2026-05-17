@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { GameData } from '@/lib/types';
+import { basementIntro } from '@/lib/scenes';
+import Stage from '@/components/Stage';
 
 export default function HostPage() {
   const params = useParams();
@@ -11,6 +13,7 @@ export default function HostPage() {
   const [hostId, setHostId] = useState<string | null>(null);
   const [game, setGame] = useState<GameData | null>(null);
   const [error, setError] = useState('');
+  const [stageFinished, setStageFinished] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem('hostId');
@@ -40,12 +43,16 @@ export default function HostPage() {
     });
     const data = await res.json();
     if (data.error) alert(data.error);
-    else fetchGame();
+    else {
+      fetchGame();
+      if (action === 'open-voting') setStageFinished(false);
+    }
   };
 
   if (!hostId) return <p className="text-blood-500 font-heading">Loading...</p>;
   if (!game) return <p className="text-blood-500 font-heading">Loading game state...</p>;
 
+  // Lobby UI
   if (game.state === 'lobby') {
     return (
       <div className="space-y-6">
@@ -71,6 +78,26 @@ export default function HostPage() {
     );
   }
 
+  // Stage for intro scene
+  if (game.state === 'scenario' && game.currentScenarioId === 'start') {
+    return (
+      <div className="space-y-4">
+        <Stage scene={basementIntro} onComplete={() => setStageFinished(true)} />
+        {stageFinished && (
+          <div className="flex justify-center">
+            <button
+              onClick={() => advance('open-voting')}
+              className="bg-blood-800 hover:bg-blood-700 text-white font-heading text-lg tracking-widest py-2 px-8 rounded border border-blood-600 shadow-lg"
+            >
+              OPEN VOTING
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Fallback: Original text/media view for other scenes
   const getVoteCounts = () => {
     if (!game || (game.state !== 'voting' && game.state !== 'result')) return {};
     const tally: Record<string, number> = {};
@@ -79,7 +106,6 @@ export default function HostPage() {
     }
     return tally;
   };
-
   const voteCounts = getVoteCounts();
 
   return (
@@ -88,34 +114,24 @@ export default function HostPage() {
         HOST DASHBOARD – {room}
       </h1>
 
-      {/* Scene media + text */}
-     <div className="bg-black border border-blood-800 rounded overflow-hidden shadow-[0_0_20px_rgba(139,0,0,0.15)]">
-  {game.sceneImageUrl && (
-    <img
-      src={game.sceneImageUrl}
-      alt="Scene"
-      className="w-full max-h-[800px] object-cover"
-    />
-  )}
-  {game.sceneVideoUrl && (
-    <div className="w-full">
-      {game.sceneVideoUrl.includes('youtube.com/embed') ? (
-        <iframe
-          src={game.sceneVideoUrl}
-          className="w-full h-[450px] md:h-[700px]"
-          allowFullScreen
-        />
-      ) : (
-        <video controls className="w-full max-h-[800px]">
-          <source src={game.sceneVideoUrl} type="video/mp4" />
-        </video>
-      )}
-    </div>
-  )}
-  <p className="p-4 text-xl font-body text-gray-200 leading-relaxed">{game.scenarioText}</p>
-</div>
+      <div className="bg-black border border-blood-800 rounded overflow-hidden shadow-[0_0_20px_rgba(139,0,0,0.15)]">
+        {game.sceneImageUrl && (
+          <img src={game.sceneImageUrl} alt="Scene" className="w-full max-h-96 object-cover" />
+        )}
+        {game.sceneVideoUrl && (
+          <div className="w-full">
+            {game.sceneVideoUrl.includes('youtube.com/embed') ? (
+              <iframe src={game.sceneVideoUrl} className="w-full h-64 md:h-96" allowFullScreen />
+            ) : (
+              <video controls className="w-full max-h-96">
+                <source src={game.sceneVideoUrl} type="video/mp4" />
+              </video>
+            )}
+          </div>
+        )}
+        <p className="p-4 text-xl font-body text-gray-200 leading-relaxed">{game.scenarioText}</p>
+      </div>
 
-      {/* Choices */}
       <div>
         <p className="text-sm font-heading text-gray-500 mb-3 tracking-wider">CHOICES</p>
         <ul className="space-y-3">
@@ -144,36 +160,24 @@ export default function HostPage() {
         </ul>
       </div>
 
-      {/* Host controls */}
       <div className="flex gap-4">
         {game.state === 'scenario' && (
-          <button
-            onClick={() => advance('open-voting')}
-            className="flex-1 py-2 bg-blood-800 hover:bg-blood-700 text-white font-heading text-lg tracking-widest rounded border border-blood-600 shadow-[0_0_15px_rgba(139,0,0,0.5)] transition"
-          >
+          <button onClick={() => advance('open-voting')} className="flex-1 py-2 bg-blood-800 hover:bg-blood-700 text-white font-heading text-lg tracking-widest rounded border border-blood-600 shadow-[0_0_15px_rgba(139,0,0,0.5)] transition">
             OPEN VOTING
           </button>
         )}
         {game.state === 'voting' && (
-          <button
-            onClick={() => advance('close-voting')}
-            className="flex-1 py-2 bg-blood-800 hover:bg-blood-700 text-white font-heading text-lg tracking-widest rounded border border-blood-600 transition"
-          >
+          <button onClick={() => advance('close-voting')} className="flex-1 py-2 bg-blood-800 hover:bg-blood-700 text-white font-heading text-lg tracking-widest rounded border border-blood-600 transition">
             CLOSE VOTING
           </button>
         )}
         {game.state === 'result' && (
-          <button
-            onClick={() => advance('next-scene')}
-            className="flex-1 py-2 bg-blood-800 hover:bg-blood-700 text-white font-heading text-lg tracking-widest rounded border border-blood-600 transition"
-          >
+          <button onClick={() => advance('next-scene')} className="flex-1 py-2 bg-blood-800 hover:bg-blood-700 text-white font-heading text-lg tracking-widest rounded border border-blood-600 transition">
             CONTINUE
           </button>
         )}
         {game.state === 'finished' && (
-          <p className="text-2xl font-heading font-bold text-blood-500 text-center w-full">
-            THE END
-          </p>
+          <p className="text-2xl font-heading font-bold text-blood-500 text-center w-full">THE END</p>
         )}
       </div>
     </div>
