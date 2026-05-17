@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { GameData } from '@/lib/types';
-import { basementIntro } from '@/lib/scenes';
+import { act1Scenes, basementIntro } from '@/lib/scenes';
 import Stage from '@/components/Stage';
 
 export default function HostPage() {
@@ -36,6 +36,22 @@ export default function HostPage() {
     return () => clearInterval(interval);
   }, [fetchGame]);
 
+  // Reset stageFinished when the scene changes
+  useEffect(() => {
+    setStageFinished(false);
+  }, [game?.currentScenarioId]);
+
+  // Update overlay text based on state
+  useEffect(() => {
+    if (game?.state === 'voting') {
+      setVotingOverlay('VOTING IN PROGRESS');
+    } else if (game?.state === 'result') {
+      setVotingOverlay('THE DARKNESS HAS SPOKEN');
+    } else {
+      setVotingOverlay(null);
+    }
+  }, [game?.state]);
+
   const advance = async (action: string) => {
     const res = await fetch('/api/advance', {
       method: 'POST',
@@ -46,17 +62,6 @@ export default function HostPage() {
     if (data.error) alert(data.error);
     else fetchGame();
   };
-
-  // When state changes, set the overlay text
-  useEffect(() => {
-    if (game?.state === 'voting') {
-      setVotingOverlay('VOTING IN PROGRESS');
-    } else if (game?.state === 'result') {
-      setVotingOverlay('THE DARKNESS HAS SPOKEN');
-    } else {
-      setVotingOverlay(null);
-    }
-  }, [game?.state]);
 
   if (!hostId) return <p className="text-blood-500 font-heading">Loading...</p>;
   if (!game) return <p className="text-blood-500 font-heading">Loading game state...</p>;
@@ -89,18 +94,24 @@ export default function HostPage() {
     );
   }
 
-  // Game is active → always show the stage with possible overlay & controls
+  // Determine which animated scene to show
+  const currentSceneData = act1Scenes[game.currentScenarioId];
+  // If we have an animated scene, use it; otherwise use a fallback (basementIntro)
+  const sceneToShow = currentSceneData || basementIntro;
+
+  // Game is active – always show the stage with possible overlay & controls
   return (
     <div className="relative w-screen h-screen">
       <Stage
-        scene={basementIntro}
+        key={game.currentScenarioId} // force remount on scene change
+        scene={sceneToShow}
         overlay={votingOverlay || undefined}
-        onComplete={() => setStageFinished(true)}   // ← this was missing!
+        onComplete={() => setStageFinished(true)}
       />
 
       {/* Host buttons overlaid on stage (bottom centre) */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex gap-4">
-        {game.state === 'scenario' && game.currentScenarioId === 'start' && stageFinished && (
+        {game.state === 'scenario' && stageFinished && (
           <button
             onClick={() => advance('open-voting')}
             className="bg-blood-800 hover:bg-blood-700 text-white font-heading text-lg tracking-widest py-2 px-8 rounded border border-blood-600 shadow-lg"
