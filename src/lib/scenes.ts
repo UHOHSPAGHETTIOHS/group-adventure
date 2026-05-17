@@ -19,18 +19,19 @@ export interface AnimatedScene {
 
 // --- The intro scene ---
 const avatarPositions: Record<string, AvatarPosition> = {
-  Dawson:  { x: 15, y: 25 },
-  Nick:    { x: 30, y: 15 },
-  Gabe:    { x: 50, y: 12 },
-  Holden:  { x: 68, y: 15 },
-  Mark:    { x: 82, y: 25 },
-  Mason:   { x: 85, y: 55 }, // sitting at the end of table
-  Ryan:    { x: 70, y: 75 },
-  Sean:    { x: 50, y: 80 },
-  Nate:    { x: 30, y: 78 },
-  Jack:    { x: 15, y: 60 },
-  Luke:    { x: 45, y: 30 }, // middle of table, directly across from Mason?
-  Jacob:   { x: 60, y: 35 },
+  // around the table (top center)
+  Dawson:  { x: 25, y: 20 },
+  Nick:    { x: 35, y: 18 },
+  Gabe:    { x: 50, y: 15 },
+  Holden:  { x: 65, y: 18 },
+  Mark:    { x: 75, y: 20 },
+  Mason:   { x: 80, y: 30 },  // right side of table
+  Ryan:    { x: 75, y: 40 },
+  Sean:    { x: 65, y: 42 },
+  Nate:    { x: 50, y: 45 },
+  Jack:    { x: 35, y: 42 },
+  Luke:    { x: 25, y: 40 },
+  Jacob:   { x: 20, y: 30 },  // left side of table
 };
 
 export const basementIntro: AnimatedScene = {

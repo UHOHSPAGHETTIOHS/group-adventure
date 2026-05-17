@@ -9,15 +9,12 @@ export interface Scene {
 
 export const story: Record<string, Scene> = {
   start: {
-  text: "", // Host shows the stage, players see a short prompt from the API
-  choices: [
-    { id: "listen_broadcast", text: "Listen to the emergency broadcast", nextSceneId: "tv_broadcast" },
-    { id: "touch_jacob", text: "Touch Jacob, then listen to the broadcast", nextSceneId: "tv_broadcast" },
-  ],
+  text: "",
+  choices: [], // will be overwritten by the API
 },
-  tv_broadcast: {
+tv_broadcast: {
   text: "The group gathers around the TV, listening intently...",
-  choices: [], // No voting for now – this ends the demo
+  choices: [],
 },
   basement: {
     text: "The basement door is hidden behind a shelf. It's dark and smells of damp earth. You hear a faint drip of water and a low, rhythmic thumping.",

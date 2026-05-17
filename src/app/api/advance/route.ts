@@ -17,11 +17,10 @@ export async function POST(request: Request) {
   }
 
   switch (action) {
-   case 'start': {
+  case 'start': {
   if (gameData.state !== 'lobby') return NextResponse.json({ error: 'Game already started' }, { status: 400 });
   gameData.state = 'scenario';
 
-  // Set the first voting prompt (players will see a short text)
   gameData.scenarioText = "What do you do?";
   gameData.choices = [
     { id: "listen_broadcast", text: "Listen to the emergency broadcast", nextSceneId: "tv_broadcast" },
