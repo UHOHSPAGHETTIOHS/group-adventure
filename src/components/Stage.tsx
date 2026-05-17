@@ -79,49 +79,52 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
       {/* Floor */}
       <div className="absolute inset-0 bg-gray-800" />
 
-      {/* ---------- CENTRE TABLE (wide, squarish) ---------- */}
-      <div className="absolute left-[5%] right-[5%] top-[35%] h-20 bg-amber-800 border-2 border-amber-600 rounded-lg shadow-xl" />
+      {/* ---------- CENTRE TABLE (wide & squat) ---------- */}
+      <div className="absolute left-[8%] right-[8%] top-[38%] h-16 bg-amber-800 border-2 border-amber-600 rounded-lg shadow-xl" />
 
-      {/* Board game pieces on table */}
-      <div className="absolute left-[28%] top-[41%] w-8 h-8 bg-red-500 rounded-full" />
-      <div className="absolute left-[45%] top-[43%] w-8 h-8 bg-blue-500 rounded-full" />
-      <div className="absolute left-[62%] top-[40%] w-8 h-8 bg-green-500 rounded-full" />
+      {/* Board game pieces (slightly larger) */}
+      <div className="absolute left-[28%] top-[44%] w-8 h-8 bg-red-500 rounded-full" />
+      <div className="absolute left-[45%] top-[46%] w-8 h-8 bg-blue-500 rounded-full" />
+      <div className="absolute left-[62%] top-[43%] w-8 h-8 bg-green-500 rounded-full" />
 
-      {/* ---------- COUCHES ---------- */}
-      {/* Bottom‑left couch (wider, squatter) */}
-      <div className="absolute left-[5%] bottom-[8%] w-[40%] h-16 bg-gray-600 rounded-lg border border-gray-500">
+      {/* ---------- COUCHES (both facing left → backrest on the right) ---------- */}
+
+      {/* Main couch: right side, centred vertically, facing left toward the TV */}
+      <div className="absolute right-[2%] top-[30%] bottom-[30%] w-[18%] bg-gray-600 rounded-lg border border-gray-500 flex flex-col justify-center">
+        {/* Backrest on the right side (vertical bar) */}
         <div className="absolute right-0 top-0 bottom-0 w-2 bg-gray-700 rounded-r" />
-        <div className="absolute left-[10%] top-[15%] w-[22%] h-[70%] bg-gray-500 rounded" />
-        <div className="absolute left-[35%] top-[15%] w-[22%] h-[70%] bg-gray-500 rounded" />
-        <div className="absolute left-[60%] top-[15%] w-[22%] h-[70%] bg-gray-500 rounded" />
+        {/* Cushions (stacked vertically because the couch is tall) */}
+        <div className="h-[28%] mx-2 my-1 bg-gray-500 rounded" />
+        <div className="h-[28%] mx-2 my-1 bg-gray-500 rounded" />
+        <div className="h-[28%] mx-2 my-1 bg-gray-500 rounded" />
       </div>
 
-      {/* Bottom‑centre couch (same size) */}
-      <div className="absolute left-[50%] bottom-[8%] w-[40%] h-16 bg-gray-600 rounded-lg border border-gray-500">
+      {/* Secondary couch: bottom-right corner, also facing left */}
+      <div className="absolute right-[22%] bottom-[4%] w-[25%] h-14 bg-gray-600 rounded-lg border border-gray-500">
         <div className="absolute right-0 top-0 bottom-0 w-2 bg-gray-700 rounded-r" />
-        <div className="absolute left-[10%] top-[15%] w-[22%] h-[70%] bg-gray-500 rounded" />
-        <div className="absolute left-[35%] top-[15%] w-[22%] h-[70%] bg-gray-500 rounded" />
-        <div className="absolute left-[60%] top-[15%] w-[22%] h-[70%] bg-gray-500 rounded" />
+        <div className="absolute left-[10%] top-[12%] w-[25%] h-[75%] bg-gray-500 rounded" />
+        <div className="absolute left-[40%] top-[12%] w-[25%] h-[75%] bg-gray-500 rounded" />
+        <div className="absolute left-[70%] top-[12%] w-[25%] h-[75%] bg-gray-500 rounded" />
       </div>
 
-      {/* ---------- TV (bottom‑right, bigger) ---------- */}
-      <div className="absolute right-[5%] bottom-[8%] w-64 h-40 bg-gray-700 rounded border-2 border-gray-500 flex items-center justify-center">
+      {/* ---------- TV (bottom left, BIGGER) ---------- */}
+      <div className="absolute left-[3%] bottom-[6%] w-72 h-44 bg-gray-700 rounded border-2 border-gray-500 flex items-center justify-center">
         <div
           className={`w-[92%] h-[82%] bg-black rounded flex items-center justify-center text-center font-heading overflow-hidden ${
             tvText ? 'bg-red-900 animate-pulse' : ''
           }`}
         >
           {tvText ? (
-            <span className="text-red-300 text-sm md:text-base leading-tight px-1">{tvText}</span>
+            <span className="text-red-300 text-sm md:text-lg leading-tight px-1">{tvText}</span>
           ) : (
-            <span className="text-gray-500 text-xl">OFF</span>
+            <span className="text-gray-500 text-2xl">OFF</span>
           )}
         </div>
       </div>
-      {/* TV antenna */}
-      <div className="absolute right-[8%] bottom-[32%] w-1 h-10 bg-gray-500 transform rotate-12 origin-bottom" />
+      {/* TV antenna (pointing up-left) */}
+      <div className="absolute left-[5%] bottom-[30%] w-1 h-12 bg-gray-500 transform -rotate-12 origin-bottom" />
 
-      {/* ---------- AVATARS (larger) ---------- */}
+      {/* ---------- AVATARS (bigger, properly positioned) ---------- */}
       {names.map(name => {
         const pos = positions[name];
         const isShaking = shaking === name;
@@ -144,25 +147,25 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
             <img
               src={avatarUrl(name)}
               alt={name}
-              className="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover border-2 border-gray-400 shadow-md"
+              className="w-20 h-20 md:w-28 md:h-28 rounded-full object-cover border-2 border-gray-400 shadow-md"
             />
-            <p className="text-xs md:text-sm text-gray-200 font-heading text-center mt-1">
+            <p className="text-sm md:text-base text-gray-200 font-heading text-center mt-1">
               {name}
             </p>
           </div>
         );
       })}
 
-      {/* ---------- SPEECH BUBBLE (extra large) ---------- */}
+      {/* ---------- SPEECH BUBBLE (extra huge) ---------- */}
       {dialogue && (
         <div
-          className="absolute z-20 bg-black border-2 border-blood-600 text-gray-100 p-5 rounded-xl text-xl md:text-2xl font-body max-w-lg shadow-2xl"
+          className="absolute z-20 bg-black border-2 border-blood-600 text-gray-100 p-6 rounded-xl text-2xl md:text-3xl font-body max-w-2xl shadow-2xl"
           style={{
             left: `${positions[dialogue.speaker].x + 5}%`,
-            top: `${positions[dialogue.speaker].y - 14}%`,
+            top: `${positions[dialogue.speaker].y - 15}%`,
           }}
         >
-          <p className="font-heading text-blood-400 text-2xl md:text-3xl mb-3">
+          <p className="font-heading text-blood-400 text-3xl md:text-4xl mb-4">
             {dialogue.speaker}
           </p>
           <p>{dialogue.text}</p>
@@ -171,7 +174,7 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
 
       {/* ---------- VOTING OVERLAY ---------- */}
       {overlay && (
-        <div className="absolute top-8 left-1/2 -translate-x-1/2 bg-blood-900/90 text-white font-heading text-3xl md:text-5xl px-10 py-4 rounded-lg border border-blood-600 animate-pulse z-30">
+        <div className="absolute top-10 left-1/2 -translate-x-1/2 bg-blood-900/90 text-white font-heading text-4xl md:text-6xl px-12 py-5 rounded-lg border border-blood-600 animate-pulse z-30">
           {overlay}
         </div>
       )}
