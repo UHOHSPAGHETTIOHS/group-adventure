@@ -82,32 +82,21 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
       {/* ---------- CENTRE TABLE (wide & squat) ---------- */}
       <div className="absolute left-[8%] right-[8%] top-[38%] h-16 bg-amber-800 border-2 border-amber-600 rounded-lg shadow-xl" />
 
-      {/* Board game pieces (slightly larger) */}
+      {/* Board game pieces */}
       <div className="absolute left-[28%] top-[44%] w-8 h-8 bg-red-500 rounded-full" />
       <div className="absolute left-[45%] top-[46%] w-8 h-8 bg-blue-500 rounded-full" />
       <div className="absolute left-[62%] top-[43%] w-8 h-8 bg-green-500 rounded-full" />
 
-      {/* ---------- COUCHES (both facing left → backrest on the right) ---------- */}
-
-      {/* Main couch: right side, centred vertically, facing left toward the TV */}
-      <div className="absolute right-[2%] top-[30%] bottom-[30%] w-[18%] bg-gray-600 rounded-lg border border-gray-500 flex flex-col justify-center">
-        {/* Backrest on the right side (vertical bar) */}
-        <div className="absolute right-0 top-0 bottom-0 w-2 bg-gray-700 rounded-r" />
-        {/* Cushions (stacked vertically because the couch is tall) */}
-        <div className="h-[28%] mx-2 my-1 bg-gray-500 rounded" />
-        <div className="h-[28%] mx-2 my-1 bg-gray-500 rounded" />
-        <div className="h-[28%] mx-2 my-1 bg-gray-500 rounded" />
-      </div>
-
-      {/* Secondary couch: bottom-right corner, also facing left */}
+      {/* ---------- COUCH (only one, bottom‑right, facing left) ---------- */}
       <div className="absolute right-[22%] bottom-[4%] w-[25%] h-14 bg-gray-600 rounded-lg border border-gray-500">
+        {/* Backrest on the right, so it faces left (toward the TV) */}
         <div className="absolute right-0 top-0 bottom-0 w-2 bg-gray-700 rounded-r" />
         <div className="absolute left-[10%] top-[12%] w-[25%] h-[75%] bg-gray-500 rounded" />
         <div className="absolute left-[40%] top-[12%] w-[25%] h-[75%] bg-gray-500 rounded" />
         <div className="absolute left-[70%] top-[12%] w-[25%] h-[75%] bg-gray-500 rounded" />
       </div>
 
-      {/* ---------- TV (bottom left, BIGGER) ---------- */}
+      {/* ---------- TV (bottom left, BIG) ---------- */}
       <div className="absolute left-[3%] bottom-[6%] w-72 h-44 bg-gray-700 rounded border-2 border-gray-500 flex items-center justify-center">
         <div
           className={`w-[92%] h-[82%] bg-black rounded flex items-center justify-center text-center font-heading overflow-hidden ${
@@ -121,10 +110,10 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
           )}
         </div>
       </div>
-      {/* TV antenna (pointing up-left) */}
+      {/* TV antenna */}
       <div className="absolute left-[5%] bottom-[30%] w-1 h-12 bg-gray-500 transform -rotate-12 origin-bottom" />
 
-      {/* ---------- AVATARS (bigger, properly positioned) ---------- */}
+      {/* ---------- AVATARS ---------- */}
       {names.map(name => {
         const pos = positions[name];
         const isShaking = shaking === name;
@@ -156,7 +145,7 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
         );
       })}
 
-      {/* ---------- SPEECH BUBBLE (extra huge) ---------- */}
+      {/* ---------- SPEECH BUBBLE ---------- */}
       {dialogue && (
         <div
           className="absolute z-20 bg-black border-2 border-blood-600 text-gray-100 p-6 rounded-xl text-2xl md:text-3xl font-body max-w-2xl shadow-2xl"
