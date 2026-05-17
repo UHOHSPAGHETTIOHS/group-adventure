@@ -1,12 +1,13 @@
-// ---- Avatar positions ----
+// ---- Types ----
 export interface AvatarPosition {
-  x: number; // percent from left
-  y: number; // percent from top
+  x: number;
+  y: number;
 }
 
 export type SceneStep =
   | { type: "dialogue"; speaker: string; text: string }
-  | { type: "action"; target: string; effect: string }
+  | { type: "action"; target: string; effect: string }      // shake, twitch
+  | { type: "move_avatar"; target: string; x: number; y: number } 
   | { type: "tv_alert"; text: string }
   | { type: "pause"; duration: number }
   | { type: "sound"; file: string }
@@ -18,7 +19,7 @@ export interface AnimatedScene {
   sequence: SceneStep[];
 }
 
-// ---- Shared basement positions (reused for all basement scenes) ----
+// ---- Shared basement positions ----
 const basementPositions: Record<string, AvatarPosition> = {
   Dawson:  { x: 24, y: 36 }, Nick:    { x: 34, y: 34 }, Gabe:    { x: 50, y: 33 },
   Holden:  { x: 66, y: 34 }, Mark:    { x: 76, y: 36 },
@@ -27,7 +28,7 @@ const basementPositions: Record<string, AvatarPosition> = {
   Luke:    { x: 28, y: 56 }, Jacob:   { x: 4, y: 45 },
 };
 
-// ---- Intro scene (start) ----
+// ---- Intro (start) ----
 export const basementIntro: AnimatedScene = {
   background: "basement",
   positions: basementPositions,
@@ -50,11 +51,12 @@ export const act1Scenes: Record<string, AnimatedScene> = {
     positions: basementPositions,
     sequence: [
       { type: "dialogue", speaker: "Mark", text: "That was the emergency broadcast! They're telling everyone to stay inside. This is just like Night of the Living Dead!" },
-      { type: "dialogue", speaker: "Gabe", text: "I knew it. The voices were right. We're in the end times. But we're not going to die in this basement. We need weapons." },
+      { type: "dialogue", speaker: "Gabe", text: "It's the apocalypse. The end times. The cleansing fire. I knew it. I knew the voices were right." },
+      { type: "dialogue", speaker: "Holden", text: "Okay Gabe is freaking me out more than the zombie stuff." },
       { type: "sound", file: "mason_growl.mp3" },
       { type: "dialogue", speaker: "Mason", text: "FLESH! I need FLESH!" },
       { type: "action", target: "Mason", effect: "shake" },
-      { type: "dialogue", speaker: "Dawson", text: "We can't keep him in here with us. We either tie him up now, or we leave." },
+      { type: "dialogue", speaker: "Sean", text: "I got good dick right here for you Mason." },
     ],
   },
 
@@ -62,12 +64,24 @@ export const act1Scenes: Record<string, AnimatedScene> = {
     background: "basement",
     positions: {
       ...basementPositions,
-      // Move Mason to a corner where he's tied up
-      Mason: { x: 90, y: 30 },
+      // Mason will be moved to the corner during the scene – we keep his initial position here for now
+      Mason: { x: 96, y: 45 },
     },
     sequence: [
-      { type: "dialogue", speaker: "Jack", text: "Alright, Mason, you're staying right there until we figure out what to do." },
+      { type: "dialogue", speaker: "Dawson", text: "Jack, Nate, Jacob – grab him. We're tying him to that chair." },
+      // Three avatars move toward Mason
+      { type: "move_avatar", target: "Jack", x: 90, y: 45 },
+      { type: "move_avatar", target: "Nate", x: 88, y: 48 },
+      { type: "move_avatar", target: "Jacob", x: 85, y: 45 },
+      { type: "pause", duration: 800 },
+      { type: "sound", file: "struggle.mp3" },
+      { type: "action", target: "Mason", effect: "shake" },
       { type: "dialogue", speaker: "Mason", text: "You'll regret this! I'll eat your brains! And then I'll sue you for illegal imprisonment!" },
+      // Move them back to their original seats
+      { type: "move_avatar", target: "Jack", x: 42, y: 58 },
+      { type: "move_avatar", target: "Nate", x: 58, y: 58 },
+      { type: "move_avatar", target: "Jacob", x: 4, y: 45 },
+      { type: "pause", duration: 1000 },
       { type: "dialogue", speaker: "Sean", text: "Guys, we can't just leave him like that. He's sick. Maybe we can find a cure?" },
       { type: "dialogue", speaker: "Dawson", text: "We need to secure the basement. Board up the windows and the door. Then we can search the house for supplies." },
       { type: "sound", file: "board_up.mp3" },
@@ -92,13 +106,12 @@ export const act1Scenes: Record<string, AnimatedScene> = {
     ],
   },
 
-  // Placeholder for upstairs_hallway – adjust later
+  // Placeholder scenes – adjust backgrounds and sequences later
   upstairs_hallway: {
-    background: "basement", // change to "upstairs" when you have that background
+    background: "basement", // change to "upstairs" once you have the CSS room
     positions: {
       ...basementPositions,
-      // Remove Mason (he's either tied or left behind)
-      Mason: { x: -999, y: -999 },
+      Mason: { x: -999, y: -999 },   // hide Mason
     },
     sequence: [
       { type: "dialogue", speaker: "Ryan", text: "It's dark up here. I think I saw a duck." },
@@ -121,10 +134,9 @@ export const act1Scenes: Record<string, AnimatedScene> = {
   },
 
   outside_yard: {
-    background: "outside", // you'll need to create an outside background later
+    background: "outside",
     positions: {
       ...basementPositions,
-      // Remove Mason (he's not here)
       Mason: { x: -999, y: -999 },
     },
     sequence: [
