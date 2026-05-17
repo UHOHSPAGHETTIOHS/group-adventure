@@ -28,6 +28,7 @@ export async function POST() {
     history: [],
     sceneImageUrl: initialScene.imageUrl,
     sceneVideoUrl: initialScene.videoUrl,
+    inventory: [],   // ← ADD THIS
   };
 
   await kv.set(`room:${roomCode}`, gameData);
