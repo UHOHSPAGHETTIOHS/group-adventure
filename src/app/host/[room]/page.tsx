@@ -47,10 +47,7 @@ export default function HostPage() {
     else fetchGame();
   };
 
-  // Show stage once the game has started (i.e., not in lobby)
-  const showStage = game && game.state !== 'lobby';
-
-  // Overlay text based on state
+  // When state changes, set the overlay text
   useEffect(() => {
     if (game?.state === 'voting') {
       setVotingOverlay('VOTING IN PROGRESS');
@@ -61,13 +58,6 @@ export default function HostPage() {
     }
   }, [game?.state]);
 
-  // After stage animation ends, keep the stage but allow actions
-  useEffect(() => {
-    if (game?.state === 'scenario' && game.currentScenarioId === 'start' && stageFinished) {
-      // Nothing special – the button will appear
-    }
-  }, [game?.state, game?.currentScenarioId, stageFinished]);
-
   if (!hostId) return <p className="text-blood-500 font-heading">Loading...</p>;
   if (!game) return <p className="text-blood-500 font-heading">Loading game state...</p>;
 
@@ -76,7 +66,9 @@ export default function HostPage() {
     return (
       <div className="space-y-6">
         <h1 className="text-3xl font-heading font-bold text-blood-500">GAME LOBBY</h1>
-        <p className="text-gray-400 font-body">Room code: <span className="text-blood-400 font-heading text-xl">{room}</span></p>
+        <p className="text-gray-400 font-body">
+          Room code: <span className="text-blood-400 font-heading text-xl">{room}</span>
+        </p>
         <div className="bg-black border border-blood-800 p-3 rounded text-center font-mono text-blood-300">
           {typeof window !== 'undefined' ? `${window.location.origin}/join?room=${room}` : ''}
         </div>
@@ -97,12 +89,16 @@ export default function HostPage() {
     );
   }
 
-  // Game is active – always show stage with overlays
+  // Game is active → always show the stage with possible overlay & controls
   return (
     <div className="relative w-screen h-screen">
-      <Stage scene={basementIntro} overlay={votingOverlay || undefined} />
+      <Stage
+        scene={basementIntro}
+        overlay={votingOverlay || undefined}
+        onComplete={() => setStageFinished(true)}   // ← this was missing!
+      />
 
-      {/* Host controls overlaid on stage */}
+      {/* Host buttons overlaid on stage (bottom centre) */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex gap-4">
         {game.state === 'scenario' && game.currentScenarioId === 'start' && stageFinished && (
           <button

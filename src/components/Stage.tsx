@@ -10,7 +10,7 @@ function avatarUrl(name: string): string {
 interface StageProps {
   scene: AnimatedScene;
   onComplete?: () => void;
-  overlay?: string; // optional text overlay (e.g., "VOTING IN PROGRESS")
+  overlay?: string;
 }
 
 export default function Stage({ scene, onComplete, overlay }: StageProps) {
@@ -76,43 +76,45 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
 
   return (
     <div className="fixed inset-0 z-50 bg-gray-900 border-4 border-blood-800 overflow-hidden shadow-[0_0_30px_rgba(139,0,0,0.5)]">
-      {/* ----- TOP-DOWN BASEMENT ----- */}
       {/* Floor */}
       <div className="absolute inset-0 bg-gray-800" />
 
-      {/* Big wooden table (top center) */}
-      <div className="absolute left-[15%] right-[15%] top-[10%] h-32 bg-amber-800 border-2 border-amber-600 rounded-lg shadow-xl" />
+      {/* Big wooden table (top centre) */}
+      <div className="absolute left-[10%] right-[10%] top-[8%] h-28 bg-amber-800 border-2 border-amber-600 rounded-lg shadow-xl" />
 
       {/* Board game pieces on table */}
-      <div className="absolute left-[30%] top-[18%] w-5 h-5 bg-red-500 rounded-full" />
-      <div className="absolute left-[45%] top-[20%] w-5 h-5 bg-blue-500 rounded-full" />
-      <div className="absolute left-[60%] top-[17%] w-5 h-5 bg-green-500 rounded-full" />
+      <div className="absolute left-[28%] top-[14%] w-6 h-6 bg-red-500 rounded-full" />
+      <div className="absolute left-[45%] top-[16%] w-6 h-6 bg-blue-500 rounded-full" />
+      <div className="absolute left-[62%] top-[13%] w-6 h-6 bg-green-500 rounded-full" />
 
-      {/* Couch (bottom center) */}
-      <div className="absolute left-[30%] right-[30%] bottom-[10%] h-16 bg-gray-600 rounded-lg border border-gray-500" />
-      {/* Couch cushions */}
-      <div className="absolute left-[33%] bottom-[12%] w-[12%] h-10 bg-gray-500 rounded" />
-      <div className="absolute left-[47%] bottom-[12%] w-[12%] h-10 bg-gray-500 rounded" />
-      <div className="absolute left-[61%] bottom-[12%] w-[12%] h-10 bg-gray-500 rounded" />
+      {/* Couch (bottom centre, facing left toward TV) */}
+      <div className="absolute left-[25%] right-[25%] bottom-[8%] h-20 bg-gray-600 rounded-lg border border-gray-500">
+        {/* Backrest indicator (right side, so couch faces left) */}
+        <div className="absolute right-0 top-0 bottom-0 w-2 bg-gray-700 rounded-r" />
+        {/* Cushions */}
+        <div className="absolute left-[8%] top-[15%] w-[20%] h-[70%] bg-gray-500 rounded" />
+        <div className="absolute left-[32%] top-[15%] w-[20%] h-[70%] bg-gray-500 rounded" />
+        <div className="absolute left-[56%] top-[15%] w-[20%] h-[70%] bg-gray-500 rounded" />
+      </div>
 
-      {/* TV (bottom left) */}
-      <div className="absolute left-[5%] bottom-[15%] w-32 h-24 bg-gray-700 rounded border-2 border-gray-500 flex items-center justify-center">
+      {/* TV (bottom left, larger) */}
+      <div className="absolute left-[4%] bottom-[12%] w-56 h-32 bg-gray-700 rounded border-2 border-gray-500 flex items-center justify-center">
         <div
-          className={`w-[90%] h-[80%] bg-black rounded flex items-center justify-center text-center font-heading ${
+          className={`w-[92%] h-[82%] bg-black rounded flex items-center justify-center text-center font-heading overflow-hidden ${
             tvText ? 'bg-red-900 animate-pulse' : ''
           }`}
         >
           {tvText ? (
-            <span className="text-red-300 text-sm md:text-base leading-tight px-1">{tvText}</span>
+            <span className="text-red-300 text-xs md:text-sm leading-tight px-1">{tvText}</span>
           ) : (
             <span className="text-gray-500 text-lg">OFF</span>
           )}
         </div>
       </div>
       {/* TV antenna */}
-      <div className="absolute left-[6%] bottom-[38%] w-1 h-8 bg-gray-500 transform -rotate-12 origin-bottom" />
+      <div className="absolute left-[7%] bottom-[32%] w-1 h-8 bg-gray-500 transform -rotate-12 origin-bottom" />
 
-      {/* Avatars */}
+      {/* Avatars (grouped around the table edges) */}
       {names.map(name => {
         const pos = positions[name];
         const isShaking = shaking === name;
@@ -148,7 +150,7 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
           className="absolute z-20 bg-black border-2 border-blood-600 text-gray-100 p-4 rounded-lg text-base md:text-xl font-body max-w-md shadow-2xl"
           style={{
             left: `${positions[dialogue.speaker].x + 5}%`,
-            top: `${positions[dialogue.speaker].y - 15}%`,
+            top: `${positions[dialogue.speaker].y - 12}%`,
           }}
         >
           <p className="font-heading text-blood-400 text-lg md:text-2xl mb-2">{dialogue.speaker}</p>
@@ -156,9 +158,9 @@ export default function Stage({ scene, onComplete, overlay }: StageProps) {
         </div>
       )}
 
-      {/* Overlay text (e.g., voting status) */}
+      {/* Overlay text (e.g., VOTING IN PROGRESS) */}
       {overlay && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-blood-900/90 text-white font-heading text-xl md:text-3xl px-6 py-3 rounded-lg border border-blood-600 animate-pulse">
+        <div className="absolute top-6 left-1/2 -translate-x-1/2 bg-blood-900/90 text-white font-heading text-2xl md:text-4xl px-8 py-3 rounded-lg border border-blood-600 animate-pulse z-30">
           {overlay}
         </div>
       )}
