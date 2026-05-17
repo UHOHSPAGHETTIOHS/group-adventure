@@ -6,8 +6,8 @@ export interface AvatarPosition {
 
 export type SceneStep =
   | { type: "dialogue"; speaker: string; text: string }
-  | { type: "action"; target: string; effect: string }      // shake, twitch
-  | { type: "move_avatar"; target: string; x: number; y: number } 
+  | { type: "action"; target: string; effect: string }
+  | { type: "move_avatar"; target: string; x: number; y: number }
   | { type: "tv_alert"; text: string }
   | { type: "pause"; duration: number }
   | { type: "sound"; file: string }
@@ -46,9 +46,8 @@ export const basementIntro: AnimatedScene = {
 export const act1Scenes: Record<string, AnimatedScene> = {
   start: basementIntro,
 
-
-
-  listen_broadcast: {
+  // After the intro, both choices lead here
+  tv_broadcast: {
     background: "basement",
     positions: basementPositions,
     sequence: [
@@ -59,20 +58,8 @@ export const act1Scenes: Record<string, AnimatedScene> = {
       { type: "dialogue", speaker: "Mason", text: "Thinking of it now Sean's dick does sound delicious." },
     ],
   },
-  touch_jacob: {
-    background: "basement",
-    positions: basementPositions,
-    sequence: [
-      { type: "dialogue", speaker: "Mark", text: "Give me dat ass boy" },
-      { type: "dialogue", speaker: "Gabe", text: "You thought you left me in clemson" },
-      { type: "dialogue", speaker: "Holden", text: "Okay Gabe is freaking me out" },
-      { type: "dialogue", speaker: "Mason", text: "Im hungry Jacob" },
-      //have every avatar rush to jacob, shake and then go back to their seats. stain jacobs avatar white.
-      { type: "tv_alert", text: "🚨...KILL ON SIGHT. 🚨" },
-      { type: "dialogue", speaker: "Jack", text: "OOUUU SHII we missed it." },
-    ],
-  },
 
+  // Choice 1: symptom_check
   symptom_check: {
     background: "basement",
     positions: basementPositions,
@@ -94,7 +81,8 @@ export const act1Scenes: Record<string, AnimatedScene> = {
     ],
   },
 
- outside_check: {
+  // Choice 2: check_outside
+  check_outside: {
     background: "basement",
     positions: basementPositions,
     sequence: [
@@ -114,5 +102,4 @@ export const act1Scenes: Record<string, AnimatedScene> = {
       { type: "dialogue", speaker: "Gabe", text: "Im going to fucking kill someone soon" },
     ],
   },
-
 };
