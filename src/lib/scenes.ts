@@ -46,103 +46,73 @@ export const basementIntro: AnimatedScene = {
 export const act1Scenes: Record<string, AnimatedScene> = {
   start: basementIntro,
 
-  tv_broadcast: {
+
+
+  listen_broadcast: {
     background: "basement",
     positions: basementPositions,
     sequence: [
-      { type: "dialogue", speaker: "Mark", text: "That was the emergency broadcast! They're telling everyone to stay inside. This is just like Night of the Living Dead!" },
+      { type: "tv_alert", text: "🚨 Symptoms include bloodshot red eyes, excess thirst, and extreme hunger. KILL ON SIGHT. 🚨" },
+      { type: "dialogue", speaker: "Holden", text: "OUUU SHII" },
       { type: "dialogue", speaker: "Gabe", text: "It's the apocalypse. The end times. The cleansing fire. I knew it. I knew the voices were right." },
       { type: "dialogue", speaker: "Holden", text: "Okay Gabe is freaking me out more than the zombie stuff." },
-      { type: "sound", file: "mason_growl.mp3" },
-      { type: "dialogue", speaker: "Mason", text: "FLESH! I need FLESH!" },
-      { type: "action", target: "Mason", effect: "shake" },
-      { type: "dialogue", speaker: "Sean", text: "I got good dick right here for you Mason." },
+      { type: "dialogue", speaker: "Mason", text: "Thinking of it now Sean's dick does sound delicious." },
     ],
   },
-
-  tie_mason: {
-    background: "basement",
-    positions: {
-      ...basementPositions,
-      // Mason will be moved to the corner during the scene – we keep his initial position here for now
-      Mason: { x: 96, y: 45 },
-    },
-    sequence: [
-      { type: "dialogue", speaker: "Dawson", text: "Jack, Nate, Jacob – grab him. We're tying him to that chair." },
-      // Three avatars move toward Mason
-      { type: "move_avatar", target: "Jack", x: 90, y: 45 },
-      { type: "move_avatar", target: "Nate", x: 88, y: 48 },
-      { type: "move_avatar", target: "Jacob", x: 85, y: 45 },
-      { type: "pause", duration: 800 },
-      { type: "sound", file: "struggle.mp3" },
-      { type: "action", target: "Mason", effect: "shake" },
-      { type: "dialogue", speaker: "Mason", text: "You'll regret this! I'll eat your brains! And then I'll sue you for illegal imprisonment!" },
-      // Move them back to their original seats
-      { type: "move_avatar", target: "Jack", x: 42, y: 58 },
-      { type: "move_avatar", target: "Nate", x: 58, y: 58 },
-      { type: "move_avatar", target: "Jacob", x: 4, y: 45 },
-      { type: "pause", duration: 1000 },
-      { type: "dialogue", speaker: "Sean", text: "Guys, we can't just leave him like that. He's sick. Maybe we can find a cure?" },
-      { type: "dialogue", speaker: "Dawson", text: "We need to secure the basement. Board up the windows and the door. Then we can search the house for supplies." },
-      { type: "sound", file: "board_up.mp3" },
-      { type: "pause", duration: 2000 },
-      { type: "dialogue", speaker: "Nate", text: "I found some nails and a few planks. Let's do this." },
-    ],
-  },
-
-  flee_basement: {
+  touch_jacob: {
     background: "basement",
     positions: basementPositions,
     sequence: [
-      { type: "dialogue", speaker: "Nick", text: "Oh god oh god oh god. I'm too pretty to die! Let's just run!" },
-      { type: "dialogue", speaker: "Gabe", text: "Running is smart. We'll find weapons upstairs. Follow me." },
-      { type: "action", target: "Gabe", effect: "shake" },
-      { type: "dialogue", speaker: "Dawson", text: "Wait! We need a plan. At least grab something to defend ourselves." },
-      { type: "sound", file: "mason_roar.mp3" },
-      { type: "dialogue", speaker: "Mason", text: "You can't leave me! I'll break free and find you!" },
-      { type: "action", target: "Mason", effect: "twitch" },
-      { type: "pause", duration: 1000 },
-      { type: "dialogue", speaker: "Holden", text: "He's getting loose! Run!" },
+      { type: "dialogue", speaker: "Mark", text: "Give me dat ass boy" },
+      { type: "dialogue", speaker: "Gabe", text: "You thought you left me in clemson" },
+      { type: "dialogue", speaker: "Holden", text: "Okay Gabe is freaking me out" },
+      { type: "dialogue", speaker: "Mason", text: "Im hungry Jacob" },
+      //have every avatar rush to jacob, shake and then go back to their seats. stain jacobs avatar white.
+      { type: "tv_alert", text: "🚨...KILL ON SIGHT. 🚨" },
+      { type: "dialogue", speaker: "Jack", text: "OOUUU SHII we missed it." },
     ],
   },
 
-  // Placeholder scenes – adjust backgrounds and sequences later
-  upstairs_hallway: {
-    background: "basement", // change to "upstairs" once you have the CSS room
-    positions: {
-      ...basementPositions,
-      Mason: { x: -999, y: -999 },   // hide Mason
-    },
-    sequence: [
-      { type: "dialogue", speaker: "Ryan", text: "It's dark up here. I think I saw a duck." },
-      { type: "dialogue", speaker: "Jacob", text: "Ryan, there's no duck! Focus!" },
-      { type: "dialogue", speaker: "Mark", text: "According to every zombie movie, we should check for weapons. Bathroom, kitchen, bedrooms." },
-      { type: "dialogue", speaker: "Gabe", text: "I'll check the kitchen. Knives are good. Very good." },
-    ],
-  },
-
-  stay_basement: {
+  symptom_check: {
     background: "basement",
     positions: basementPositions,
     sequence: [
-      { type: "dialogue", speaker: "Sean", text: "We're safe here. The barricade will hold. Let's just wait for help." },
-      { type: "sound", file: "banging_door.mp3" },
-      { type: "dialogue", speaker: "Luke", text: "Did you hear that? It's the zombies! They're trying to get in!" },
-      { type: "action", target: "Luke", effect: "shake" },
-      { type: "dialogue", speaker: "Dawson", text: "Stay calm. The door is sturdy. But we can't just sit here forever." },
+      { type: "dialogue", speaker: "Nick", text: "No, no, no, no, 'm too pretty to DIE. On the other hand, plenty of dead bodies for me to use." },
+      { type: "dialogue", speaker: "Nate", text: "EVERYBODY SHUT THE FUCK UP. Let's go in a circle and say if we have any symptoms of sickness. I don't feel anything." },
+      { type: "dialogue", speaker: "Holden", text: "Anybody have water?" },
+      { type: "dialogue", speaker: "Mason", text: "Sean's dick has sounded oddly delicious lately." },
+      { type: "dialogue", speaker: "Sean", text: "Stay the fuck away from me" },
+      { type: "dialogue", speaker: "Jack", text: "i feel okay but my eyes are itchy." },
+      { type: "dialogue", speaker: "Nick", text: "No, no, no, no, 'm too pretty to DIE. On the other hand, plenty of dead bodies for me to use." },
+      { type: "dialogue", speaker: "Dawson", text: "I've been feeling curious recently." },
+      { type: "dialogue", speaker: "Holden", text: "So nobody has water?" },
+      { type: "dialogue", speaker: "Ryan", text: "do you guys think we can use my pancoins still? I'm hungry." },
+      { type: "dialogue", speaker: "Luke", text: "When the crow flies we shall find the answers we desire." },
+      { type: "dialogue", speaker: "Jacob", text: "is this my blood or one of yours in my ass" },
+      { type: "dialogue", speaker: "Mark", text: "this is just like brokeback mountain" },
+      { type: "dialogue", speaker: "Gabe", text: "Im going to fucking kill someone soon" },
     ],
   },
 
-  outside_yard: {
-    background: "outside",
-    positions: {
-      ...basementPositions,
-      Mason: { x: -999, y: -999 },
-    },
+ outside_check: {
+    background: "basement",
+    positions: basementPositions,
     sequence: [
-      { type: "dialogue", speaker: "Holden", text: "We're outside. The zombies are everywhere!" },
-      { type: "sound", file: "zombie_attack.mp3" },
-      { type: "dialogue", speaker: "Dawson", text: "Get to the truck! Now!" },
+      { type: "dialogue", speaker: "Nick", text: "No, no, no, no, 'm too pretty to DIE. On the other hand, plenty of dead bodies for me to use." },
+      { type: "dialogue", speaker: "Nate", text: "EVERYBODY SHUT THE FUCK UP. Let's go in a circle and say if we have any symptoms of sickness. I don't feel anything." },
+      { type: "dialogue", speaker: "Holden", text: "Anybody have water?" },
+      { type: "dialogue", speaker: "Mason", text: "Sean's dick has sounded oddly delicious lately." },
+      { type: "dialogue", speaker: "Sean", text: "Stay the fuck away from me" },
+      { type: "dialogue", speaker: "Jack", text: "i feel okay but my eyes are itchy." },
+      { type: "dialogue", speaker: "Nick", text: "No, no, no, no, 'm too pretty to DIE. On the other hand, plenty of dead bodies for me to use." },
+      { type: "dialogue", speaker: "Dawson", text: "I've been feeling curious recently." },
+      { type: "dialogue", speaker: "Holden", text: "So nobody has water?" },
+      { type: "dialogue", speaker: "Ryan", text: "do you guys think we can use my pancoins still? I'm hungry." },
+      { type: "dialogue", speaker: "Luke", text: "When the crow flies we shall find the answers we desire." },
+      { type: "dialogue", speaker: "Jacob", text: "is this my blood or one of yours in my ass" },
+      { type: "dialogue", speaker: "Mark", text: "this is just like brokeback mountain" },
+      { type: "dialogue", speaker: "Gabe", text: "Im going to fucking kill someone soon" },
     ],
   },
+
 };
