@@ -17,20 +17,20 @@ export async function POST(request: Request) {
   }
 
   switch (action) {
-    case 'start': {
-      if (gameData.state !== 'lobby')
-        return NextResponse.json({ error: 'Game already started' }, { status: 400 });
+   case 'start': {
+  if (gameData.state !== 'lobby') return NextResponse.json({ error: 'Game already started' }, { status: 400 });
+  gameData.state = 'scenario';
 
-      gameData.state = 'scenario';
-      // Set initial scene media
-      const initialScene = story[gameData.currentScenarioId];
-      if (initialScene) {
-        gameData.sceneImageUrl = initialScene.imageUrl;
-        gameData.sceneVideoUrl = initialScene.videoUrl;
-      }
-      await kv.set(key, gameData);
-      return NextResponse.json({ success: true });
-    }
+  // Set the first voting prompt (players will see a short text)
+  gameData.scenarioText = "What do you do?";
+  gameData.choices = [
+    { id: "listen_broadcast", text: "Listen to the emergency broadcast", nextSceneId: "tv_broadcast" },
+    { id: "touch_jacob", text: "Touch Jacob, then listen to the broadcast", nextSceneId: "tv_broadcast" },
+  ];
+
+  await kv.set(key, gameData);
+  return NextResponse.json({ success: true });
+}
 
     case 'open-voting': {
       if (gameData.state !== 'scenario')

@@ -20,7 +20,7 @@ export default function Stage({ scene, onComplete }: StageProps) {
   const [twitching, setTwitching] = useState<string | null>(null);
 
   const onCompleteRef = useRef(onComplete);
-  onCompleteRef.current = onComplete; // always keep the latest callback
+  onCompleteRef.current = onComplete;
 
   const sequence = scene.sequence;
   const positions = scene.positions;
@@ -28,14 +28,11 @@ export default function Stage({ scene, onComplete }: StageProps) {
 
   useEffect(() => {
     if (stepIndex >= sequence.length) {
-      // Sequence finished
       onCompleteRef.current?.();
       return;
     }
 
     const step = sequence[stepIndex];
-
-    // Reset all visual states
     setDialogue(null);
     setTvText(null);
     setShaking(null);
@@ -46,12 +43,12 @@ export default function Stage({ scene, onComplete }: StageProps) {
     switch (step.type) {
       case 'dialogue':
         setDialogue({ speaker: step.speaker, text: step.text });
-        timer = setTimeout(() => setStepIndex(i => i + 1), 3000);
+        timer = setTimeout(() => setStepIndex(i => i + 1), 4000); // longer for bigger text
         break;
 
       case 'tv_alert':
         setTvText(step.text);
-        timer = setTimeout(() => setStepIndex(i => i + 1), 3000);
+        timer = setTimeout(() => setStepIndex(i => i + 1), 4000);
         break;
 
       case 'action':
@@ -73,45 +70,43 @@ export default function Stage({ scene, onComplete }: StageProps) {
     }
 
     return () => clearTimeout(timer);
-    // onComplete is intentionally NOT in the dependency array – we use the ref instead
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stepIndex, sequence]);
 
   return (
     <div className="fixed inset-0 z-50 bg-gray-900 border-4 border-blood-800 overflow-hidden shadow-[0_0_30px_rgba(139,0,0,0.5)]">
       {/* CSS Basement */}
-      {/* Floor */}
       <div className="absolute inset-0 bg-gray-800" />
-      {/* Rug */}
-      <div className="absolute left-1/2 top-3/4 -translate-x-1/2 -translate-y-1/2 w-3/4 h-20 bg-gray-700 rounded-full opacity-50" />
+      <div className="absolute left-1/2 top-3/4 -translate-x-1/2 -translate-y-1/2 w-3/4 h-24 bg-gray-700 rounded-full opacity-50" />
 
-      {/* Table */}
-      <div className="absolute left-1/4 right-1/4 top-[35%] h-16 bg-amber-900 border-2 border-amber-700 rounded-lg shadow-lg" />
-      <div className="absolute left-[28%] top-[calc(35%+64px)] w-4 h-20 bg-amber-900" />
-      <div className="absolute right-[28%] top-[calc(35%+64px)] w-4 h-20 bg-amber-900" />
+      {/* Table – much wider and taller */}
+      <div className="absolute left-[10%] right-[10%] top-[30%] h-20 bg-amber-900 border-2 border-amber-700 rounded-lg shadow-lg" />
+      <div className="absolute left-[12%] top-[calc(30%+80px)] w-6 h-28 bg-amber-900" />
+      <div className="absolute right-[12%] top-[calc(30%+80px)] w-6 h-28 bg-amber-900" />
 
       {/* Couch */}
-      <div className="absolute left-2 top-[60%] w-32 h-16 bg-gray-600 rounded-lg border border-gray-500" />
+      <div className="absolute left-4 top-[55%] w-40 h-20 bg-gray-600 rounded-lg border border-gray-500" />
 
-      {/* TV */}
-      <div className="absolute right-2 top-[55%] w-20 h-10 bg-gray-700 rounded" />
+      {/* TV stand and TV – MUCH larger */}
+      <div className="absolute right-4 top-[50%] w-32 h-12 bg-gray-700 rounded" />
       <div
-        className={`absolute right-4 top-[35%] w-16 h-12 bg-black border-2 border-gray-600 rounded flex items-center justify-center text-center text-xs font-heading ${
+        className={`absolute right-6 top-[32%] w-48 h-32 bg-black border-4 border-gray-500 rounded flex items-center justify-center text-center font-heading ${
           tvText ? 'bg-red-900 animate-pulse' : ''
         }`}
       >
         {tvText ? (
-          <span className="text-red-300 text-[8px] leading-tight">{tvText}</span>
+          <span className="text-red-300 text-base md:text-lg leading-tight px-2">{tvText}</span>
         ) : (
-          <span className="text-gray-500">OFF</span>
+          <span className="text-gray-500 text-lg">OFF</span>
         )}
       </div>
 
-      {/* Board game pieces */}
-      <div className="absolute left-[30%] top-[37%] w-4 h-4 bg-red-500 rounded-full" />
-      <div className="absolute left-[45%] top-[39%] w-4 h-4 bg-blue-500 rounded-full" />
+      {/* Board game pieces – bigger */}
+      <div className="absolute left-[25%] top-[33%] w-6 h-6 bg-red-500 rounded-full" />
+      <div className="absolute left-[40%] top-[35%] w-6 h-6 bg-blue-500 rounded-full" />
+      <div className="absolute left-[55%] top-[34%] w-6 h-6 bg-green-500 rounded-full" />
 
-      {/* Avatars */}
+      {/* Avatars – much bigger */}
       {names.map(name => {
         const pos = positions[name];
         const isShaking = shaking === name;
@@ -134,25 +129,25 @@ export default function Stage({ scene, onComplete }: StageProps) {
             <img
               src={avatarUrl(name)}
               alt={name}
-              className="w-12 h-12 md:w-16 md:h-16 rounded-full object-cover border-2 border-gray-400 shadow-md"
+              className="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover border-2 border-gray-400 shadow-md"
             />
-            <p className="text-[10px] md:text-xs text-gray-200 font-heading text-center mt-1">
+            <p className="text-sm md:text-base text-gray-200 font-heading text-center mt-1">
               {name}
             </p>
           </div>
         );
       })}
 
-      {/* Speech Bubble */}
+      {/* Speech Bubble – much larger */}
       {dialogue && (
         <div
-          className="absolute z-20 bg-black border border-blood-600 text-gray-100 p-2 md:p-3 rounded-md text-xs md:text-sm font-body max-w-[200px] md:max-w-xs shadow-lg"
+          className="absolute z-20 bg-black border-2 border-blood-600 text-gray-100 p-4 rounded-lg text-base md:text-xl font-body max-w-md shadow-2xl"
           style={{
             left: `${positions[dialogue.speaker].x + 5}%`,
-            top: `${positions[dialogue.speaker].y - 12}%`,
+            top: `${positions[dialogue.speaker].y - 15}%`,
           }}
         >
-          <p className="font-heading text-blood-400 text-[10px] md:text-xs mb-1">
+          <p className="font-heading text-blood-400 text-lg md:text-2xl mb-2">
             {dialogue.speaker}
           </p>
           <p>{dialogue.text}</p>

@@ -9,23 +9,16 @@ export interface Scene {
 
 export const story: Record<string, Scene> = {
   start: {
-    text: "You and your friends wake up in an abandoned cabin in the woods. The front door is locked, and the windows are boarded. You hear scratching coming from the attic.",
-    videoUrl: "/videos/zombie.mp4",   // example scene image
-    choices: [
-      { id: "attic", text: "Investigate the attic", nextSceneId: "attic" },
-      { id: "basement", text: "Search for a basement entrance", nextSceneId: "basement" },
-      { id: "stay", text: "Stay together and barricade the living room", nextSceneId: "barricade" },
-    ],
-  },
-  attic: {
-    text: "The attic stairs creak loudly. At the top, you find an old radio and a diary. The radio crackles: 'Don't trust the one who has the key.'",
-    imageUrl: "/images/attic.jpg",
-    choices: [
-      { id: "radio", text: "Try to use the radio to call for help", nextSceneId: "radio_help" },
-      { id: "diary", text: "Read the diary carefully", nextSceneId: "diary_read" },
-      { id: "back_down", text: "Go back down immediately", nextSceneId: "barricade" },
-    ],
-  },
+  text: "", // Host shows the stage, players see a short prompt from the API
+  choices: [
+    { id: "listen_broadcast", text: "Listen to the emergency broadcast", nextSceneId: "tv_broadcast" },
+    { id: "touch_jacob", text: "Touch Jacob, then listen to the broadcast", nextSceneId: "tv_broadcast" },
+  ],
+},
+  tv_broadcast: {
+  text: "The group gathers around the TV, listening intently...",
+  choices: [], // No voting for now – this ends the demo
+},
   basement: {
     text: "The basement door is hidden behind a shelf. It's dark and smells of damp earth. You hear a faint drip of water and a low, rhythmic thumping.",
     imageUrl: "/images/basement.jpg",
